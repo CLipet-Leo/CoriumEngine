@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{27c27571-2a86-48c4-8577-9b96a427c8fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\pch">
+      <UniqueIdentifier>{de95c091-92f5-4eec-8992-91d52af6ac06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Private">
+      <UniqueIdentifier>{419cd7b0-ac6a-4fdc-b44f-8c8d8d5f5e7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Public">
+      <UniqueIdentifier>{c6dd79ac-337d-4ffc-9240-d1a34ee2dc05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Intermediate">
+      <UniqueIdentifier>{cd64b825-6acf-4f35-941e-3be123433cdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content">
+      <UniqueIdentifier>{986b4a91-b7ac-4721-89ee-2f88117e9e6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressources">
+      <UniqueIdentifier>{53aafbc1-60bc-4b76-9162-a835be3e2a82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressources\Icons">
+      <UniqueIdentifier>{5e034ad8-4262-42ae-aed9-63e6722af53e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ressources\Images">
+      <UniqueIdentifier>{8edfb7c4-7551-4610-8885-6f170b848bb8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Ressources</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\BlankProject.h">
+      <Filter>Source\Public</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Application.rc">
+      <Filter>Ressources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Content\Icons\corium_icon.ico">
+      <Filter>Ressources\Icons</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\BlankProject.cpp">
+      <Filter>Source\Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
