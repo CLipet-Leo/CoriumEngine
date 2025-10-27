@@ -168,7 +168,7 @@
       <PreprocessorDefinitions>_DEBUG;USE_DX12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\DirectX-Headers\include;$(SolutionDir)\RenderLib\include;$(SolutionDir)\RenderLib\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\include;$(SolutionDir)\RenderLib\include;$(SolutionDir)\RenderLib\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -208,10 +208,10 @@
     <Image Include="ressources\small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CoriumEngine.aps" />
+    <ResourceCompile Include="CoriumEngine.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="CoriumEngine.rc" />
+    <None Include="CoriumEngine.aps" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

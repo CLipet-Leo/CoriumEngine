@@ -48,11 +48,11 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CoriumEngine.aps" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="CoriumEngine.rc">
       <Filter>Fichiers de ressources</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CoriumEngine.aps" />
   </ItemGroup>
 </Project>
