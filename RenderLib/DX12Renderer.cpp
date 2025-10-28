@@ -277,6 +277,8 @@ bool DX12Renderer::CreateRenderTargetViews()
 
 void DX12Renderer::WaitForGpu()
 {
+    if (!m_fence || !m_commandQueue)
+		return;
     // Signaler la queue
     ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue));
     // Attendre que la fence atteigne cette valeur

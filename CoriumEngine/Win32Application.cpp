@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Win32Application.h"
+#include <iostream>
 
 // On suppose que ta librairie de rendu fournit ces fonctions externes
 // Pour créer / détruire un renderer concret (DX12 par ex.)
@@ -18,16 +19,20 @@ Win32Application::~Win32Application()
 
 bool Win32Application::RegisterWindowClass(HINSTANCE hInstance)
 {
-    WNDCLASS wc = {};
+    WNDCLASSEX wc = {};
+    wc.cbSize = sizeof(WNDCLASSEX);
     wc.lpfnWndProc = WndProcStatic;
     wc.hInstance = hInstance;
     wc.lpszClassName = s_windowClassName;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    // Ici tu peux définir une icône, style, etc.
 
-    if (!RegisterClass(&wc))
+    // Charger les icônes depuis les ressources de l'application.
+    // Utiliser LR_SHARED évite de devoir appeler DestroyIcon.
+    wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_CORIUMENGINE), IMAGE_ICON, 32, 32, LR_SHARED | LR_DEFAULTCOLOR);
+    wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_CORIUMENGINE), IMAGE_ICON, 16, 16, LR_SHARED | LR_DEFAULTCOLOR);
+
+    if (!RegisterClassEx(&wc))
     {
-        // erreur
         return false;
     }
     return true;
@@ -38,6 +43,9 @@ bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, uint32_t wi
     m_hInstance = hInstance;
     m_width = width;
     m_height = height;
+	wchar_t titleBuffer[256] = {0};
+	LoadString(hInstance, IDS_APP_TITLE, titleBuffer, 256);
+	LPCWSTR title = titleBuffer;
 
     if (!RegisterWindowClass(hInstance))
         return false;
@@ -49,7 +57,7 @@ bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, uint32_t wi
     m_hWnd = CreateWindowEx(
         0,
         s_windowClassName,
-        L"Ma Fenetre",         // titre de la fenêtre
+        title,         // titre de la fenêtre
         style,
         CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
@@ -98,6 +106,7 @@ void Win32Application::Run()
 
 void Win32Application::Shutdown()
 {
+	std::cout << "Shutting down application..." << std::endl;
     if (m_renderer)
     {
         m_renderer->Shutdown();
