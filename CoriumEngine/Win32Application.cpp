@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Win32Application.h"
+#include "public/Win32Application.h"
 #include <iostream>
 
 // On suppose que ta librairie de rendu fournit ces fonctions externes

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Win32Application.h"
+#include "public/Win32Application.h"
 // Memory leak detection
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>

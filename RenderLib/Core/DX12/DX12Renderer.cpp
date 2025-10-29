@@ -125,16 +125,7 @@ void DX12Renderer::Render()
     // Présenter
     ThrowIfFailed(m_swapChain->Present(1, 0));
 
-    // Signal / attente pour la synchro
-    const UINT64 currentFence = m_fenceValue;
-    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), currentFence));
-    m_fenceValue++;
-
-    if (m_fence->GetCompletedValue() < currentFence)
-    {
-        ThrowIfFailed(m_fence->SetEventOnCompletion(currentFence, m_fenceEvent));
-        WaitForSingleObject(m_fenceEvent, INFINITE);
-    }
+    WaitForGpu();
 
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
@@ -279,10 +270,13 @@ void DX12Renderer::WaitForGpu()
 {
     if (!m_fence || !m_commandQueue)
 		return;
-    // Signaler la queue
-    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue));
-    // Attendre que la fence atteigne cette valeur
-    ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValue, m_fenceEvent));
-    WaitForSingleObject(m_fenceEvent, INFINITE);
     m_fenceValue++;
+    if (m_fence->GetCompletedValue() < m_fenceValue)
+    {
+        // Signaler la queue
+        ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue));
+        // Attendre que la fence atteigne cette valeur
+        ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValue, m_fenceEvent));
+        WaitForSingleObject(m_fenceEvent, INFINITE);
+	}
 }

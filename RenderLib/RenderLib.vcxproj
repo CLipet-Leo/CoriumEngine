@@ -181,7 +181,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\include;$(ProjectDir)\include;$(ProjectDir)\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\RenderLib\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>NotSet</SubSystem>
@@ -208,8 +208,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DX12Renderer.cpp" />
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="Core\DX12\DX12Renderer.cpp" />
+    <ClCompile Include="Core\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -217,16 +217,16 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Core\Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Core.h" />
-    <ClInclude Include="include\CoreDefinition.h" />
-    <ClInclude Include="include\framework.h" />
-    <ClInclude Include="include\pch.h" />
-    <ClInclude Include="include\RenderLib.h" />
-    <ClInclude Include="public\DX12Renderer.h" />
-    <ClInclude Include="public\Renderer.h" />
+    <ClInclude Include="Core\include\Core.h" />
+    <ClInclude Include="Core\include\CoreDefinition.h" />
+    <ClInclude Include="Core\include\framework.h" />
+    <ClInclude Include="Core\include\pch.h" />
+    <ClInclude Include="Core\include\RenderLib.h" />
+    <ClInclude Include="Core\DX12\DX12Renderer.h" />
+    <ClInclude Include="Core\public\Renderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -26,12 +26,12 @@ private:
     void WaitForGpu();
 
 private:
-    ComPtr<IDXGIFactory4>       m_factory;
-    ComPtr<ID3D12Device>        m_device;
-    ComPtr<ID3D12CommandQueue>  m_commandQueue;
-    ComPtr<IDXGISwapChain3>     m_swapChain;
-    ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
-    UINT                        m_rtvDescriptorSize = 0;
+    ComPtr<IDXGIFactory4>         m_factory;
+    ComPtr<ID3D12Device>          m_device;
+    ComPtr<ID3D12CommandQueue>    m_commandQueue;
+    ComPtr<IDXGISwapChain3>       m_swapChain;
+    ComPtr<ID3D12DescriptorHeap>  m_rtvHeap;
+    UINT                          m_rtvDescriptorSize = 0;
 
     std::vector<ComPtr<ID3D12Resource>> m_renderTargets;
 
