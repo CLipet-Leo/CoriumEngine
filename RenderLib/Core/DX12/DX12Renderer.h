@@ -1,7 +1,5 @@
 #pragma once
 
-using Microsoft::WRL::ComPtr;
-
 extern "C" {
     CORIUM_API IRenderer* CreateRenderer();
     CORIUM_API void DestroyRenderer(IRenderer*);
@@ -19,33 +17,21 @@ public:
     virtual void Shutdown() override;
 
 private:
-    bool CreateDevice();
-    bool CreateCommandObjects();
-    bool CreateSwapChain(HWND hWnd);
-    bool CreateRenderTargetViews();
-    void WaitForGpu();
+    std::unique_ptr<DX12Debug>          m_debug;
+    std::unique_ptr<DXGIFactory>        m_factory;
+    std::unique_ptr<DXGIAdapter>        m_adapter;
+    std::unique_ptr<DX12Device>         m_device;
+    std::unique_ptr<DX12CommandQueue>   m_commandQueue;
+    std::unique_ptr<DX12SwapChain>      m_swapChain;
+    std::unique_ptr<DX12CommandObjects> m_commandObjects;
+    std::unique_ptr<DX12Fence>          m_fence;
+    std::unique_ptr<DX12DepthStencil>   m_depthStencil;
 
-private:
-    ComPtr<IDXGIFactory4>         m_factory;
-    ComPtr<ID3D12Device>          m_device;
-    ComPtr<ID3D12CommandQueue>    m_commandQueue;
-    ComPtr<IDXGISwapChain3>       m_swapChain;
-    ComPtr<ID3D12DescriptorHeap>  m_rtvHeap;
-    UINT                          m_rtvDescriptorSize = 0;
+    uint32_t       m_frameCount = 2;
+    uint32_t       m_frameIndex = 0;
+    uint32_t       m_width      = 0;
+    uint32_t       m_height     = 0;
 
-    std::vector<ComPtr<ID3D12Resource>> m_renderTargets;
-
-    ComPtr<ID3D12CommandAllocator> m_commandAllocator;
-    ComPtr<ID3D12GraphicsCommandList> m_commandList;
-
-    // Synchronisation GPU-CPU
-    ComPtr<ID3D12Fence> m_fence;
-    UINT64 m_fenceValue = 0;
-    HANDLE m_fenceEvent = nullptr;
-
-    uint32_t m_frameCount = 2;
-    uint32_t m_frameIndex = 0;
-
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
+    D3D12_VIEWPORT m_viewport     = {};
+    D3D12_RECT     m_scissorRect  = {};
 };

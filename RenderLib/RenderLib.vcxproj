@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_DX12|Win32">
@@ -218,15 +218,34 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Core\Renderer.cpp" />
+    <ClCompile Include="Core\DX12\DXGIFactory.cpp" />
+    <ClCompile Include="Core\DX12\DXGIAdapter.cpp" />
+    <ClCompile Include="Core\DX12\DX12Debug.cpp" />
+    <ClCompile Include="Core\DX12\DX12Device.cpp" />
+    <ClCompile Include="Core\DX12\DX12CommandQueue.cpp" />
+    <ClCompile Include="Core\DX12\DX12CommandObjects.cpp" />
+    <ClCompile Include="Core\DX12\DX12Fence.cpp" />
+    <ClCompile Include="Core\DX12\DX12SwapChain.cpp" />
+    <ClCompile Include="Core\DX12\DX12DepthStencil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\include\Core.h" />
     <ClInclude Include="Core\include\CoreDefinition.h" />
     <ClInclude Include="Core\include\framework.h" />
+    <ClInclude Include="Core\include\Helper.h" />
     <ClInclude Include="Core\include\pch.h" />
     <ClInclude Include="Core\include\RenderLib.h" />
     <ClInclude Include="Core\DX12\DX12Renderer.h" />
     <ClInclude Include="Core\public\Renderer.h" />
+    <ClInclude Include="Core\DX12\DXGIFactory.h" />
+    <ClInclude Include="Core\DX12\DXGIAdapter.h" />
+    <ClInclude Include="Core\DX12\DX12Debug.h" />
+    <ClInclude Include="Core\DX12\DX12Device.h" />
+    <ClInclude Include="Core\DX12\DX12CommandQueue.h" />
+    <ClInclude Include="Core\DX12\DX12CommandObjects.h" />
+    <ClInclude Include="Core\DX12\DX12Fence.h" />
+    <ClInclude Include="Core\DX12\DX12SwapChain.h" />
+    <ClInclude Include="Core\DX12\DX12DepthStencil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
