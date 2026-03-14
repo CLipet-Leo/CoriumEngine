@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_DX12|Win32">
@@ -181,7 +181,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\include;$(ProjectDir)\include;$(ProjectDir)\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\RenderLib\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>NotSet</SubSystem>
@@ -208,8 +208,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DX12Renderer.cpp" />
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="Core\DX12\DX12Renderer.cpp" />
+    <ClCompile Include="Core\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -217,16 +217,40 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Core\Renderer.cpp" />
+    <ClCompile Include="Core\DX12\DXGIFactory.cpp" />
+    <ClCompile Include="Core\DX12\DXGIAdapter.cpp" />
+    <ClCompile Include="Core\DX12\DX12Debug.cpp" />
+    <ClCompile Include="Core\DX12\DX12Device.cpp" />
+    <ClCompile Include="Core\DX12\DX12CommandQueue.cpp" />
+    <ClCompile Include="Core\DX12\DX12CommandObjects.cpp" />
+    <ClCompile Include="Core\DX12\DX12Fence.cpp" />
+    <ClCompile Include="Core\DX12\DX12SwapChain.cpp" />
+    <ClCompile Include="Core\DX12\DX12DepthStencil.cpp" />
+    <ClCompile Include="Core\Geometry\BufferGeometry.cpp" />
+    <ClCompile Include="Core\Geometry\BoxGeometry.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Core.h" />
-    <ClInclude Include="include\CoreDefinition.h" />
-    <ClInclude Include="include\framework.h" />
-    <ClInclude Include="include\pch.h" />
-    <ClInclude Include="include\RenderLib.h" />
-    <ClInclude Include="public\DX12Renderer.h" />
-    <ClInclude Include="public\Renderer.h" />
+    <ClInclude Include="Core\include\Core.h" />
+    <ClInclude Include="Core\include\CoreDefinition.h" />
+    <ClInclude Include="Core\include\framework.h" />
+    <ClInclude Include="Core\include\Helper.h" />
+    <ClInclude Include="Core\include\pch.h" />
+    <ClInclude Include="Core\include\RenderLib.h" />
+    <ClInclude Include="Core\DX12\DX12Renderer.h" />
+    <ClInclude Include="Core\public\Renderer.h" />
+    <ClInclude Include="Core\DX12\DXGIFactory.h" />
+    <ClInclude Include="Core\DX12\DXGIAdapter.h" />
+    <ClInclude Include="Core\DX12\DX12Debug.h" />
+    <ClInclude Include="Core\DX12\DX12Device.h" />
+    <ClInclude Include="Core\DX12\DX12CommandQueue.h" />
+    <ClInclude Include="Core\DX12\DX12CommandObjects.h" />
+    <ClInclude Include="Core\DX12\DX12Fence.h" />
+    <ClInclude Include="Core\DX12\DX12SwapChain.h" />
+    <ClInclude Include="Core\DX12\DX12DepthStencil.h" />
+    <ClInclude Include="Core\Geometry\Types.h" />
+    <ClInclude Include="Core\Geometry\BufferGeometry.h" />
+    <ClInclude Include="Core\Geometry\BoxGeometry.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

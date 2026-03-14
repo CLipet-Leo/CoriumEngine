@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Win32Application.h"
+#include "public/Win32Application.h"
 #include <iostream>
 
 // On suppose que ta librairie de rendu fournit ces fonctions externes
@@ -43,8 +43,8 @@ bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, uint32_t wi
     m_hInstance = hInstance;
     m_width = width;
     m_height = height;
-	wchar_t titleBuffer[256] = {0};
-	LoadString(hInstance, IDS_APP_TITLE, titleBuffer, 256);
+	wchar_t titleBuffer[MAX_NAME_STRING] = {0};
+	LoadString(hInstance, IDS_APP_TITLE, titleBuffer, MAX_NAME_STRING);
 	LPCWSTR title = titleBuffer;
 
     if (!RegisterWindowClass(hInstance))

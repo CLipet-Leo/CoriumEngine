@@ -168,7 +168,7 @@
       <PreprocessorDefinitions>_DEBUG;USE_DX12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\CoriumEngine\public;$(SolutionDir)\vcpkg_installed\x64-windows\include;$(SolutionDir)\RenderLib\include;$(SolutionDir)\RenderLib\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\CoriumEngine\include;$(SolutionDir)\RenderLib\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -193,10 +193,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="public\framework.h" />
-    <ClInclude Include="public\Resource.h" />
-    <ClInclude Include="public\stdafx.h" />
-    <ClInclude Include="public\targetver.h" />
+    <ClInclude Include="include\framework.h" />
+    <ClInclude Include="include\Resource.h" />
+    <ClInclude Include="include\stdafx.h" />
+    <ClInclude Include="include\targetver.h" />
     <ClInclude Include="public\Win32Application.h" />
   </ItemGroup>
   <ItemGroup>
@@ -208,7 +208,7 @@
     <Image Include="ressources\small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="public\CoriumEngine.rc" />
+    <ResourceCompile Include="resources\CoriumEngine.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CoriumEngine.aps" />

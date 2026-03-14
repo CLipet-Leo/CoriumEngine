@@ -11,6 +11,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cassert>
+#include <iostream>
 
 // Fichiers d'en-tête WRL (Windows Runtime Library) pour les smart pointers COM
 #include <wrl.h>
