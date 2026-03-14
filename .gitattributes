@@ -1,63 +1,83 @@
 ###############################################################################
-# Set default behavior to automatically normalize line endings.
+# Global defaults
 ###############################################################################
 * text=auto
 
 ###############################################################################
-# Set default behavior for command prompt diff.
-#
-# This is need for earlier builds of msysgit that does not have it on by
-# default for csharp files.
-# Note: This is only used by command line
+# Line endings (stable cross-platform)
 ###############################################################################
-#*.cs     diff=csharp
+*.h            text eol=lf
+*.hpp          text eol=lf
+*.c            text eol=lf
+*.cpp          text eol=lf
+*.cc           text eol=lf
+*.inl          text eol=lf
+*.ixx          text eol=lf
+*.natvis       text eol=lf
+*.hlsl         text eol=lf
+*.shader       text eol=lf
+*.cmake        text eol=lf
+CMakeLists.txt text eol=lf
+*.md           text eol=lf
+*.yml          text eol=lf
+*.yaml         text eol=lf
+*.json         text eol=lf
+*.xml          text eol=lf
+
+# Scripts
+*.ps1          text eol=lf
+*.sh           text eol=lf
+*.cmd          text eol=crlf
+*.bat          text eol=crlf
+
+# Visual Studio / MSBuild files stay CRLF on Windows
+*.sln          text eol=crlf
+*.vcxproj      text eol=crlf
+*.vcxproj.filters text eol=crlf
+*.props        text eol=crlf
+*.targets      text eol=crlf
+*.rc           text eol=crlf
 
 ###############################################################################
-# Set the merge driver for project and solution files
-#
-# Merging from the command prompt will add diff markers to the files if there
-# are conflicts (Merging from VS is not affected by the settings below, in VS
-# the diff markers are never inserted). Diff markers may cause the following 
-# file extensions to fail to load in VS. An alternative would be to treat
-# these files as binary and thus will always conflict and require user
-# intervention with every merge. To do so, just uncomment the entries below
+# Safer merges for solution/project files
 ###############################################################################
-#*.sln       merge=binary
-#*.csproj    merge=binary
-#*.vbproj    merge=binary
-#*.vcxproj   merge=binary
-#*.vcproj    merge=binary
-#*.dbproj    merge=binary
-#*.fsproj    merge=binary
-#*.lsproj    merge=binary
-#*.wixproj   merge=binary
-#*.modelproj merge=binary
-#*.sqlproj   merge=binary
-#*.wwaproj   merge=binary
+*.sln          merge=binary
+*.vcxproj      merge=binary
+*.vcxproj.filters merge=binary
+*.props        merge=binary
+*.targets      merge=binary
 
 ###############################################################################
-# behavior for image files
-#
-# image files are treated as binary by default.
+# Binary assets (no text normalization / no textual diff)
 ###############################################################################
-#*.jpg   binary
-#*.png   binary
-#*.gif   binary
+*.png          binary
+*.jpg          binary
+*.jpeg         binary
+*.gif          binary
+*.bmp          binary
+*.tga          binary
+*.dds          binary
+*.ico          binary
+
+*.fbx          binary
+*.blend        binary
+*.wav          binary
+*.mp3          binary
+*.ogg          binary
+
+*.zip          binary
+*.7z           binary
+*.rar          binary
+
+*.dll          binary
+*.exe          binary
+*.lib          binary
+*.pdb          binary
+*.obj          binary
+*.idb          binary
+*.ipch         binary
 
 ###############################################################################
-# diff behavior for common document formats
-# 
-# Convert binary document formats to text before diffing them. This feature
-# is only available from the command line. Turn it on by uncommenting the 
-# entries below.
+# Vendored/generated dependencies (GitHub stats/readability)
 ###############################################################################
-#*.doc   diff=astextplain
-#*.DOC   diff=astextplain
-#*.docx  diff=astextplain
-#*.DOCX  diff=astextplain
-#*.dot   diff=astextplain
-#*.DOT   diff=astextplain
-#*.pdf   diff=astextplain
-#*.PDF   diff=astextplain
-#*.rtf   diff=astextplain
-#*.RTF   diff=astextplain
+vcpkg_installed/** linguist-vendored
