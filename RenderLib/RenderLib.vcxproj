@@ -227,6 +227,8 @@
     <ClCompile Include="Core\DX12\DX12Fence.cpp" />
     <ClCompile Include="Core\DX12\DX12SwapChain.cpp" />
     <ClCompile Include="Core\DX12\DX12DepthStencil.cpp" />
+    <ClCompile Include="Core\Geometry\BufferGeometry.cpp" />
+    <ClCompile Include="Core\Geometry\BoxGeometry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\include\Core.h" />
@@ -246,6 +248,9 @@
     <ClInclude Include="Core\DX12\DX12Fence.h" />
     <ClInclude Include="Core\DX12\DX12SwapChain.h" />
     <ClInclude Include="Core\DX12\DX12DepthStencil.h" />
+    <ClInclude Include="Core\Geometry\Types.h" />
+    <ClInclude Include="Core\Geometry\BufferGeometry.h" />
+    <ClInclude Include="Core\Geometry\BoxGeometry.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
