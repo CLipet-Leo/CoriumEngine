@@ -229,8 +229,14 @@
     <ClCompile Include="Core\DX12\DX12DepthStencil.cpp" />
     <ClCompile Include="Core\Geometry\BufferGeometry.cpp" />
     <ClCompile Include="Core\Geometry\BoxGeometry.cpp" />
+    <ClCompile Include="Core\DX12\DX12DescriptorHeaps.cpp" />
+    <ClCompile Include="Core\DX12\DX12MemoryManager.cpp" />
+    <ClCompile Include="Core\DX12\DX12PSOCache.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\DX12\DX12DescriptorHeaps.h" />
+    <ClInclude Include="Core\DX12\DX12MemoryManager.h" />
+    <ClInclude Include="Core\DX12\DX12PSOCache.h" />
     <ClInclude Include="Core\include\Core.h" />
     <ClInclude Include="Core\include\CoreDefinition.h" />
     <ClInclude Include="Core\include\framework.h" />

@@ -45,28 +45,48 @@ bool DX12Renderer::Init(HWND hWnd, uint32_t width, uint32_t height)
         m_factory = std::make_unique<DXGIFactory>();
         m_adapter = std::make_unique<DXGIAdapter>(m_factory->GetBestAdapter());
         m_device = std::make_unique<DX12Device>(*m_adapter);
+
+#if defined(_DEBUG)
+        m_debug->SetupInfoQueue(m_device->Get());
+#endif
+
+        m_descriptorHeaps = std::make_unique<DX12DescriptorHeaps>();
+        m_descriptorHeaps->Initialize(m_device->Get(), m_frameCount, 1024);
+
+        m_memoryManager = std::make_unique<DX12MemoryManager>();
+        EVAL_HR(m_memoryManager->Initialize(m_device->Get(), m_adapter->Get()), "Memory manager initialization failed");
+
+        m_psoCache = std::make_unique<DX12PSOCache>();
+
         m_commandQueue = std::make_unique<DX12CommandQueue>(m_device->Get());
         m_swapChain = std::make_unique<DX12SwapChain>(
             m_factory->Get(), m_commandQueue->Get(), m_device->Get(),
-            hWnd, width, height, m_frameCount);
-        m_commandObjects = std::make_unique<DX12CommandObjects>(m_device->Get());
-        m_fence = std::make_unique<DX12Fence>(m_device->Get());
-        m_depthStencil = std::make_unique<DX12DepthStencil>(m_device->Get(), width, height);
+            hWnd, width, height, m_frameCount, m_descriptorHeaps.get());
 
-        if (!CreatePipeline())
-            return false;
+        m_commandObjects.resize(m_frameCount);
+        for (uint32_t i = 0; i < m_frameCount; ++i)
+        {
+            m_commandObjects[i] = std::make_unique<DX12CommandObjects>(m_device->Get());
+        }
 
-        if (!CreateCubeResources())
-            return false;
+        m_fence = std::make_unique<DX12Fence>(m_device->Get(), m_frameCount);
+        m_depthStencil = std::make_unique<DX12DepthStencil>(m_device->Get(), width, height, m_descriptorHeaps.get(), m_memoryManager.get());
+
+        if (!CreatePipeline()) return false;
+        if (!CreateCubeResources()) return false;
 
         m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
-
-        m_viewport = { 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f };
+        m_viewport = { 0.f, 0.f, static_cast<float>(width), static_cast<float>(height), 0.f, 1.f };
         m_scissorRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
 
         UpdateSceneConstants();
-
         return m_device->IsValid();
+    }
+    catch (const DX12Exception& e)
+    {
+        OutputDebugStringA(e.what());
+        Shutdown();
+        return false;
     }
     catch (...)
     {
@@ -124,10 +144,17 @@ float4 PSMain(PSInput input) : SV_TARGET
     ThrowIfFailed(D3DCompile(shaderSource, strlen(shaderSource), nullptr, nullptr, nullptr,
         "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, &errorBlob));
 
+    D3D12_DESCRIPTOR_RANGE cbvRange = {};
+    cbvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+    cbvRange.NumDescriptors = 1;
+    cbvRange.BaseShaderRegister = 0;
+    cbvRange.RegisterSpace = 0;
+    cbvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
     D3D12_ROOT_PARAMETER rootParameter = {};
-    rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameter.Descriptor.ShaderRegister = 0;
-    rootParameter.Descriptor.RegisterSpace = 0;
+    rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameter.DescriptorTable.NumDescriptorRanges = 1;
+    rootParameter.DescriptorTable.pDescriptorRanges = &cbvRange;
     rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
     D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
@@ -169,9 +196,9 @@ float4 PSMain(PSInput input) : SV_TARGET
     psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
     psoDesc.SampleDesc.Count = 1;
 
-    ThrowIfFailed(m_device->Get()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+    m_cubePipelineState = m_psoCache->GetOrCreate("CubeSolid", m_device->Get(), psoDesc);
 
-    return true;
+    return m_cubePipelineState != nullptr;
 }
 
 bool DX12Renderer::CreateCubeResources()
@@ -193,16 +220,12 @@ bool DX12Renderer::CreateCubeResources()
     m_cubeVertexCount = static_cast<UINT>(vertices.size());
     const UINT vertexBufferSize = static_cast<UINT>(vertices.size() * sizeof(CubeVertex));
 
-    const auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-    const auto vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize);
-
-    ThrowIfFailed(m_device->Get()->CreateCommittedResource(
-        &uploadHeap,
-        D3D12_HEAP_FLAG_NONE,
-        &vertexBufferDesc,
+    EVAL_HR(m_memoryManager->CreateBuffer(
+        DX12MemoryType::Upload,
+        vertexBufferSize,
         D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr,
-        IID_PPV_ARGS(&m_cubeVertexBuffer)));
+        m_cubeVertexBuffer),
+        "Cube vertex buffer allocation failed");
 
     UINT8* vertexDataBegin = nullptr;
     ThrowIfFailed(m_cubeVertexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataBegin)));
@@ -214,17 +237,24 @@ bool DX12Renderer::CreateCubeResources()
     m_cubeVertexBufferView.SizeInBytes = vertexBufferSize;
 
     const UINT constantBufferSize = (sizeof(SceneConstants) + 255) & ~255;
-    const auto constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(constantBufferSize);
-
-    ThrowIfFailed(m_device->Get()->CreateCommittedResource(
-        &uploadHeap,
-        D3D12_HEAP_FLAG_NONE,
-        &constantBufferDesc,
+    EVAL_HR(m_memoryManager->CreateBuffer(
+        DX12MemoryType::Upload,
+        constantBufferSize,
         D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr,
-        IID_PPV_ARGS(&m_sceneConstantBuffer)));
+        m_sceneConstantBuffer),
+        "Scene constant buffer allocation failed");
 
     ThrowIfFailed(m_sceneConstantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedConstantBuffer)));
+
+    DX12DescriptorHeaps::Allocation cbvAllocation;
+    if (!m_descriptorHeaps->AllocateCbvSrvUav(cbvAllocation))
+        return false;
+
+    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+    cbvDesc.BufferLocation = m_sceneConstantBuffer->GetGPUVirtualAddress();
+    cbvDesc.SizeInBytes = constantBufferSize;
+    m_device->Get()->CreateConstantBufferView(&cbvDesc, cbvAllocation.CpuHandle);
+    m_sceneCbvGpuHandle = cbvAllocation.GpuHandle;
 
     return true;
 }
@@ -234,7 +264,7 @@ void DX12Renderer::OnResize(uint32_t width, uint32_t height)
     if (width == 0 || height == 0)
         return;
 
-    m_fence->WaitForGpu(m_commandQueue->Get());
+    m_fence->FlushGpu(m_commandQueue->Get());
 
     m_swapChain->Resize(m_device->Get(), width, height);
     m_depthStencil->Resize(m_device->Get(), width, height);
@@ -269,10 +299,12 @@ void DX12Renderer::UpdateSceneConstants()
 
 void DX12Renderer::Render()
 {
+    m_fence->WaitForFrame(m_frameIndex);
+
     UpdateSceneConstants();
 
-    m_commandObjects->Reset();
-    ID3D12GraphicsCommandList* cmdList = m_commandObjects->GetCommandList();
+    m_commandObjects[m_frameIndex]->Reset();
+    ID3D12GraphicsCommandList* cmdList = m_commandObjects[m_frameIndex]->GetCommandList();
 
     D3D12_RESOURCE_BARRIER barrier = {};
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -282,8 +314,8 @@ void DX12Renderer::Render()
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     cmdList->ResourceBarrier(1, &barrier);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_swapChain->GetRTVHandle(m_frameIndex);
-    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = m_depthStencil->GetDSVHandle();
+    const D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_swapChain->GetRTVHandle(m_frameIndex);
+    const D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = m_depthStencil->GetDSVHandle();
 
     const float clearColor[4] = { 0.08f, 0.08f, 0.12f, 1.0f };
     cmdList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
@@ -293,31 +325,33 @@ void DX12Renderer::Render()
     cmdList->RSSetViewports(1, &m_viewport);
     cmdList->RSSetScissorRects(1, &m_scissorRect);
 
+    ID3D12DescriptorHeap* descriptorHeaps[] = { m_descriptorHeaps->GetCbvSrvUavHeap() };
+    cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
     cmdList->SetGraphicsRootSignature(m_rootSignature.Get());
-    cmdList->SetPipelineState(m_pipelineState.Get());
+    cmdList->SetPipelineState(m_cubePipelineState.Get());
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->IASetVertexBuffers(0, 1, &m_cubeVertexBufferView);
-    cmdList->SetGraphicsRootConstantBufferView(0, m_sceneConstantBuffer->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(0, m_sceneCbvGpuHandle);
     cmdList->DrawInstanced(m_cubeVertexCount, 1, 0, 0);
 
     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
     cmdList->ResourceBarrier(1, &barrier);
 
-    m_commandObjects->Close();
-
-    ID3D12CommandList* ppCommandLists[] = { cmdList };
-    m_commandQueue->Get()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+    m_commandObjects[m_frameIndex]->Close();
+    ID3D12CommandList* lists[] = { m_commandObjects[m_frameIndex]->GetCommandList() };
+    m_commandQueue->Get()->ExecuteCommandLists(_countof(lists), lists);
 
     m_swapChain->Present(1);
-    m_fence->WaitForGpu(m_commandQueue->Get());
+    m_fence->Signal(m_commandQueue->Get(), m_frameIndex);
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
 void DX12Renderer::Shutdown()
 {
     if (m_fence && m_commandQueue)
-        m_fence->WaitForGpu(m_commandQueue->Get());
+        m_fence->FlushGpu(m_commandQueue->Get());
 
     if (m_sceneConstantBuffer && m_mappedConstantBuffer)
     {
@@ -325,15 +359,25 @@ void DX12Renderer::Shutdown()
         m_mappedConstantBuffer = nullptr;
     }
 
+    if (m_psoCache)
+        m_psoCache->Clear();
+
     m_sceneConstantBuffer.Reset();
     m_cubeVertexBuffer.Reset();
-    m_pipelineState.Reset();
+    m_cubePipelineState.Reset();
     m_rootSignature.Reset();
 
     m_depthStencil.reset();
     m_fence.reset();
-    m_commandObjects.reset();
+    m_commandObjects.clear();
     m_swapChain.reset();
+    m_psoCache.reset();
+
+    if (m_memoryManager)
+        m_memoryManager->Shutdown();
+    m_memoryManager.reset();
+
+    m_descriptorHeaps.reset();
     m_commandQueue.reset();
     m_device.reset();
     m_adapter.reset();

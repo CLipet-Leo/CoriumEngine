@@ -33,32 +33,36 @@ private:
         DirectX::XMFLOAT4X4 WorldViewProj;
     };
 
-    std::unique_ptr<DX12Debug>          m_debug;
-    std::unique_ptr<DXGIFactory>        m_factory;
-    std::unique_ptr<DXGIAdapter>        m_adapter;
-    std::unique_ptr<DX12Device>         m_device;
-    std::unique_ptr<DX12CommandQueue>   m_commandQueue;
-    std::unique_ptr<DX12SwapChain>      m_swapChain;
-    std::unique_ptr<DX12CommandObjects> m_commandObjects;
-    std::unique_ptr<DX12Fence>          m_fence;
-    std::unique_ptr<DX12DepthStencil>   m_depthStencil;
+    std::unique_ptr<DX12Debug>           m_debug;
+    std::unique_ptr<DXGIFactory>         m_factory;
+    std::unique_ptr<DXGIAdapter>         m_adapter;
+    std::unique_ptr<DX12Device>          m_device;
+    std::unique_ptr<DX12CommandQueue>    m_commandQueue;
+    std::unique_ptr<DX12DescriptorHeaps> m_descriptorHeaps;
+    std::unique_ptr<DX12MemoryManager>   m_memoryManager;
+    std::unique_ptr<DX12PSOCache>        m_psoCache;
+    std::unique_ptr<DX12SwapChain>       m_swapChain;
+    std::vector<std::unique_ptr<DX12CommandObjects>> m_commandObjects;
+    std::unique_ptr<DX12Fence>           m_fence;
+    std::unique_ptr<DX12DepthStencil>    m_depthStencil;
 
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_cubePipelineState;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> m_cubeVertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW               m_cubeVertexBufferView = {};
     UINT                                   m_cubeVertexCount = 0;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> m_sceneConstantBuffer;
+    D3D12_GPU_DESCRIPTOR_HANDLE            m_sceneCbvGpuHandle = {};
     SceneConstants                         m_sceneConstants = {};
     UINT8*                                 m_mappedConstantBuffer = nullptr;
 
     uint32_t       m_frameCount = 2;
     uint32_t       m_frameIndex = 0;
-    uint32_t       m_width      = 0;
-    uint32_t       m_height     = 0;
+    uint32_t       m_width = 0;
+    uint32_t       m_height = 0;
 
-    D3D12_VIEWPORT m_viewport    = {};
+    D3D12_VIEWPORT m_viewport = {};
     D3D12_RECT     m_scissorRect = {};
 };
