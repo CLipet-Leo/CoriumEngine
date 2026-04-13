@@ -1,0 +1,18 @@
+<Window x:Class="CoriumEngine.Frontend.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:CoriumEngine.Frontend"
+        Title="CoriumEngine Frontend"
+        Width="1280"
+        Height="720">
+    <Grid>
+        <local:DirectXHost x:Name="DxHost" />
+
+        <StackPanel HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="12"
+                    Background="#55000000">
+            <Button Content="Load Scene" Width="120" Margin="8" />
+        </StackPanel>
+    </Grid>
+</Window>
