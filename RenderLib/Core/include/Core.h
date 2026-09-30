@@ -1,6 +1,25 @@
 #pragma once
 
+#include "Helper.h"
+#include "ShaderTypes.h"
 #include "../public/Renderer.h"
+
+// Géométrie
+#include "../Geometry/Types.h"
+#include "../Geometry/BufferGeometry.h"
+#include "../Geometry/BoxGeometry.h"
+
+// Scène (ordre de dépendance)
+#include "../../Scene/Entity.h"
+#include "../../Scene/Components.h"
+#include "../../Scene/Scene.h"
+#include "../../Scene/MeshRegistry.h"
+#include "../../Scene/MaterialRegistry.h"
+
+// Systèmes
+#include "../../Scene/Systems/TransformSystem.h"
+#include "../../Scene/Systems/LightSystem.h"
+#include "../../Scene/Systems/RenderSystem.h"
 
 #ifdef USE_DX12
 #include "../DX12/DX12Debug.h"

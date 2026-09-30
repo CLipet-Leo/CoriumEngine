@@ -1,14 +1,5 @@
 #pragma once
 
-#include <vector>
-
-#if __has_include(<D3D12MemAlloc.h>)
-#include <D3D12MemAlloc.h>
-#define CORIUM_HAS_D3D12MA 1
-#else
-#define CORIUM_HAS_D3D12MA 0
-#endif
-
 enum class DX12MemoryType
 {
     Default,
@@ -36,6 +27,8 @@ public:
         D3D12_RESOURCE_STATES initialState,
         const D3D12_CLEAR_VALUE* clearValue,
         Microsoft::WRL::ComPtr<ID3D12Resource>& outResource);
+
+    void DestroyResource(ID3D12Resource* resource);
 
     bool IsUsingD3D12MA() const;
     void Shutdown();

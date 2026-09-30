@@ -19,6 +19,9 @@ public:
 
     uint64_t GetCompletedValue() const { return m_fence->GetCompletedValue(); }
 
+    // Valeur qui sera utilisée par le prochain Signal
+    uint64_t GetNextValue() const { return m_nextFenceValue; }
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
     std::vector<uint64_t>               m_frameFenceValues; // une valeur par frame

@@ -7,6 +7,7 @@ public:
     DX12DepthStencil(ID3D12Device* device, uint32_t width, uint32_t height,
                      DX12DescriptorHeaps* descriptorHeaps,
                      DX12MemoryManager* memoryManager);
+    ~DX12DepthStencil();
 
     void Resize(ID3D12Device* device, uint32_t width, uint32_t height);
     D3D12_CPU_DESCRIPTOR_HANDLE GetDSVHandle() const;

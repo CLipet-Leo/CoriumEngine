@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_DX12|Win32">
@@ -38,38 +38,38 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -161,7 +161,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;RENDERER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\include;$(ProjectDir)\include;$(ProjectDir)\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -178,7 +178,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;RENDERER_EXPORTS;USE_DX12;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)\RenderLib\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -187,7 +187,8 @@
       <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;imguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -232,6 +233,13 @@
     <ClCompile Include="Core\DX12\DX12DescriptorHeaps.cpp" />
     <ClCompile Include="Core\DX12\DX12MemoryManager.cpp" />
     <ClCompile Include="Core\DX12\DX12PSOCache.cpp" />
+    <ClCompile Include="Core\DX12\DX12ImGui.cpp" />
+    <ClCompile Include="Scene\MeshRegistry.cpp" />
+    <ClCompile Include="Scene\MaterialRegistry.cpp" />
+    <ClCompile Include="Scene\Systems\LightSystem.cpp" />
+    <ClCompile Include="Scene\Systems\RenderSystem.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\Systems\TransformSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\DX12\DX12DescriptorHeaps.h" />
@@ -244,6 +252,7 @@
     <ClInclude Include="Core\include\pch.h" />
     <ClInclude Include="Core\include\RenderLib.h" />
     <ClInclude Include="Core\DX12\DX12Renderer.h" />
+    <ClInclude Include="Core\include\ShaderType.h" />
     <ClInclude Include="Core\public\Renderer.h" />
     <ClInclude Include="Core\DX12\DXGIFactory.h" />
     <ClInclude Include="Core\DX12\DXGIAdapter.h" />
@@ -257,6 +266,18 @@
     <ClInclude Include="Core\Geometry\Types.h" />
     <ClInclude Include="Core\Geometry\BufferGeometry.h" />
     <ClInclude Include="Core\Geometry\BoxGeometry.h" />
+    <ClInclude Include="Core\DX12\DX12ImGui.h" />
+    <ClInclude Include="Scene\MeshRegistry.h" />
+    <ClInclude Include="Scene\MaterialRegistry.h" />
+    <ClInclude Include="Scene\Systems\LightSystem.h" />
+    <ClInclude Include="Scene\Systems\RenderSystem.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\Components.h" />
+    <ClInclude Include="Scene\Entity.h" />
+    <ClInclude Include="Scene\Systems\TransformSystem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Basic.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

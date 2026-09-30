@@ -85,6 +85,27 @@ HRESULT DX12MemoryManager::CreateResource(
         IID_PPV_ARGS(&outResource));
 }
 
+void DX12MemoryManager::DestroyResource(ID3D12Resource* resource)
+{
+    if (!resource)
+        return;
+
+#if CORIUM_HAS_D3D12MA
+    if (m_allocator)
+    {
+        for (auto it = m_allocations.begin(); it != m_allocations.end(); ++it)
+        {
+            if ((*it) && (*it)->GetResource() == resource)
+            {
+                (*it)->Release();
+                m_allocations.erase(it);
+                return;
+            }
+        }
+    }
+#endif
+}
+
 bool DX12MemoryManager::IsUsingD3D12MA() const
 {
     return m_usesD3D12MA;

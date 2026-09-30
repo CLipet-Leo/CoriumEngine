@@ -12,6 +12,5 @@
 #include "RenderLib.h"
 #include "CoreDefinition.h"
 #include "Core.h"
-#include "Helper.h"
 
 #endif //PCH_H

@@ -1,8 +1,4 @@
 #pragma once
-#include <stdexcept>
-#include <sstream>
-#include <comdef.h>
-#include <comutil.h>
 
 // Exception typée avec HRESULT, fichier et ligne
 class DX12Exception : public std::runtime_error

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "public/Win32Application.h"
+#include "../RenderLib/Core/DX12/DX12ImGui.h"
 #include <iostream>
 
 // On suppose que ta librairie de rendu fournit ces fonctions externes
@@ -148,6 +149,9 @@ LRESULT CALLBACK Win32Application::WndProcStatic(HWND hWnd, UINT message, WPARAM
 
 LRESULT Win32Application::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    if (DX12ImGui::WndProcHandler(hWnd, message, wParam, lParam))
+        return true;
+
     switch (message)
     {
     case WM_SIZE:

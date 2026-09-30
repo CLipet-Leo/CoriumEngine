@@ -10,6 +10,14 @@ DX12DepthStencil::DX12DepthStencil(ID3D12Device* device, uint32_t width, uint32_
     Create(device, width, height);
 }
 
+DX12DepthStencil::~DX12DepthStencil()
+{
+    if (m_depthStencil && m_memoryManager)
+    {
+        m_memoryManager->DestroyResource(m_depthStencil.Get());
+    }
+}
+
 void DX12DepthStencil::Create(ID3D12Device* device, uint32_t width, uint32_t height)
 {
     D3D12_CLEAR_VALUE clearValue = {};
@@ -38,6 +46,10 @@ void DX12DepthStencil::Create(ID3D12Device* device, uint32_t width, uint32_t hei
 
 void DX12DepthStencil::Resize(ID3D12Device* device, uint32_t width, uint32_t height)
 {
+    if (m_depthStencil && m_memoryManager)
+    {
+        m_memoryManager->DestroyResource(m_depthStencil.Get());
+    }
     m_depthStencil.Reset();
     Create(device, width, height);
 }

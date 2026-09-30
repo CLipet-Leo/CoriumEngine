@@ -11,3 +11,11 @@
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
+
+// D3D12 Memory Allocator (optionnel)
+#if __has_include(<D3D12MemAlloc.h>)
+#include <D3D12MemAlloc.h>
+#define CORIUM_HAS_D3D12MA 1
+#else
+#define CORIUM_HAS_D3D12MA 0
+#endif
