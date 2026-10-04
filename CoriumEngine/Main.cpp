@@ -45,15 +45,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
     const uint32_t initialWidth = 800;
     const uint32_t initialHeight = 600;
 
-    Win32Application app;
+    // Scope : app (et sa Scene) doit être détruite avant le dump des fuites
+    {
+        Win32Application app;
 
-    if (!app.Initialize(hInstance, nCmdShow, initialWidth, initialHeight))
-        return -1;
+        if (!app.Initialize(hInstance, nCmdShow, initialWidth, initialHeight))
+            return -1;
 
-    LoadDemoScene(app.GetRenderer(), app.GetScene());
-    app.Run();
+        LoadDemoScene(app.GetRenderer(), app.GetScene());
+        app.Run();
 
-    app.Shutdown();
+        app.Shutdown();
+    }
 
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
     _CrtDumpMemoryLeaks();
