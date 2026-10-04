@@ -193,6 +193,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Basic.hlsl" />
+    <CopyFileToFolders Include="Shaders\Basic.hlsl" />
   </ItemGroup>
 </Project>

@@ -190,7 +190,9 @@
     <ClInclude Include="Editor\EditorUI.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Basic.hlsl" />
+    <CopyFileToFolders Include="Shaders\Basic.hlsl">
+      <DestinationFolders>$(OutDir)Shaders</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

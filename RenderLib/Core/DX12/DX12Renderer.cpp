@@ -6,6 +6,15 @@
 
 using namespace DirectX;
 
+// Les shaders sont copiés à côté de l'exécutable au build (Shaders\)
+static std::wstring GetShaderPath(const wchar_t* file)
+{
+	wchar_t exePath[MAX_PATH];
+	GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+	std::wstring dir(exePath);
+	return dir.substr(0, dir.find_last_of(L"\\/") + 1) + L"Shaders\\" + file;
+}
+
 extern "C"
 {
 	IRenderer* CreateRenderer() { return new DX12Renderer(); }
@@ -169,15 +178,15 @@ bool DX12Renderer::CreatePipeline()
 #endif
 
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+	const std::wstring shaderPath = GetShaderPath(L"Basic.hlsl");
 
-	if (FAILED(D3DCompileFromFile(L"../RenderLib/Shaders/Basic.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &m_vertexShader, &errorBlob))) {
-		if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-		throw std::runtime_error("Basic.hlsl VS Failed");
-	}
-	if (FAILED(D3DCompileFromFile(L"../RenderLib/Shaders/Basic.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &m_pixelShader, &errorBlob))) {
-		if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-		throw std::runtime_error("Basic.hlsl PS Failed");
-	}
+	HRESULT hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &m_vertexShader, &errorBlob);
+	if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	EVAL_HR(hr, "Basic.hlsl VS compilation failed");
+
+	hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &m_pixelShader, &errorBlob);
+	if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	EVAL_HR(hr, "Basic.hlsl PS compilation failed");
 
 	// Matériau par défaut (index 0)
 	MaterialDesc defaultMat;
