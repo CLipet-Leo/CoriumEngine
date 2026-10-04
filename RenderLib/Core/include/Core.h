@@ -18,8 +18,12 @@
 
 // Systèmes
 #include "../../Scene/Systems/TransformSystem.h"
+#include "../../Scene/Systems/CameraSystem.h"
 #include "../../Scene/Systems/LightSystem.h"
 #include "../../Scene/Systems/RenderSystem.h"
+
+// Éditeur
+#include "../../Editor/EditorUI.h"
 
 #ifdef USE_DX12
 #include "../DX12/DX12Debug.h"

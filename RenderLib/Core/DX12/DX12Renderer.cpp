@@ -1,25 +1,10 @@
 #include "pch.h"
 #include "DX12Renderer.h"
 #include "DX12ImGui.h"
-#include <imgui.h>
-#include "../Geometry/Types.h"
-#include "../Geometry/BufferGeometry.h"
-#include "../Geometry/BoxGeometry.h"
-#include <chrono>
-#include <cstring>
-#include <d3dcompiler.h>
 
 #pragma comment(lib, "d3dcompiler.lib")
 
 using namespace DirectX;
-
-static void ThrowIfFailed(HRESULT hr)
-{
-	if (FAILED(hr))
-	{
-		throw std::runtime_error("HRESULT failure");
-	}
-}
 
 extern "C"
 {
@@ -47,6 +32,10 @@ bool DX12Renderer::Init(HWND hWnd, uint32_t width, uint32_t height)
 		m_factory = std::make_unique<DXGIFactory>();
 		m_adapter = std::make_unique<DXGIAdapter>(m_factory->GetBestAdapter());
 		m_device = std::make_unique<DX12Device>(*m_adapter);
+
+		DXGI_ADAPTER_DESC1 adapterDesc;
+		if (SUCCEEDED(m_adapter->Get()->GetDesc1(&adapterDesc)))
+			m_adapterName = adapterDesc.Description;
 
 #if defined(_DEBUG)
 		m_debug->SetupInfoQueue(m_device->Get());
@@ -80,11 +69,10 @@ bool DX12Renderer::Init(HWND hWnd, uint32_t width, uint32_t height)
 		// ImGui — slot 0 du heap SRV réservé pour la font
 		auto cpuHandle = m_srvHeap->GetCPUDescriptorHandleForHeapStart();
 		auto gpuHandle = m_srvHeap->GetGPUDescriptorHandleForHeapStart();
-		m_srvHeapUsed = 1; // slot 0 consommé par ImGui
 
 		m_imgui = std::make_unique<DX12ImGui>();
 		m_imgui->Init(hWnd, m_device->Get(), m_frameCount,
-			DXGI_FORMAT_R8G8B8A8_UNORM,
+			DX12SwapChain::Format,
 			m_srvHeap.Get(), cpuHandle, gpuHandle);
 
 		m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
@@ -110,9 +98,6 @@ bool DX12Renderer::CreateSrvHeap()
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	EVAL_HR(m_device->Get()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_srvHeap)),
 		"SRV Heap creation failed");
-
-	m_srvDescriptorSize = m_device->Get()->GetDescriptorHandleIncrementSize(
-		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	return true;
 }
 
@@ -239,8 +224,8 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> DX12Renderer::GetPipelineFor(const M
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	psoDesc.RTVFormats[0] = DX12SwapChain::Format;
+	psoDesc.DSVFormat = DX12DepthStencil::Format;
 	psoDesc.SampleDesc.Count = 1;
 
 	return m_psoCache.GetOrCreate(mat.GetPipelineKey(), m_device->Get(), psoDesc);
@@ -304,44 +289,6 @@ uint32_t DX12Renderer::RegisterMesh(const std::string& name, const BufferGeometr
 	return m_meshRegistry.Register(name, geometry, m_device->Get());
 }
 
-void DX12Renderer::UpdateSceneConstants()
-{
-	// Cherche la caméra principale dans la scène
-	XMMATRIX view = XMMatrixIdentity();
-	XMMATRIX proj = XMMatrixIdentity();
-	XMFLOAT3 camPos = { 0.f, 0.f, 0.f };
-
-	for (auto& [id, cam] : m_scene.Cameras())
-	{
-		if (!cam.isMain) continue;
-		auto* t = m_scene.GetComponent<TransformComponent>(id);
-		if (!t) continue;
-
-		XMMATRIX R = XMMatrixRotationRollPitchYaw(
-			XMConvertToRadians(t->rotation.x),
-			XMConvertToRadians(t->rotation.y),
-			XMConvertToRadians(t->rotation.z));
-
-		XMVECTOR eye = XMLoadFloat3(&t->position);
-		XMVECTOR forward = XMVector3TransformNormal(XMVectorSet(0, 0, 1, 0), R);
-		XMVECTOR up = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), R);
-		view = XMMatrixLookToLH(eye, forward, up);
-		camPos = t->position;
-
-		float aspect = m_height > 0 ? (float)m_width / (float)m_height : 1.f;
-		proj = XMMatrixPerspectiveFovLH(
-			XMConvertToRadians(cam.fovY), aspect, cam.nearPlane, cam.farPlane);
-
-		XMStoreFloat4x4(&cam.viewMatrix, view);
-		XMStoreFloat4x4(&cam.projectionMatrix, proj);
-		break;
-	}
-
-	XMStoreFloat4x4(&m_sceneConstants.viewProj,
-		XMMatrixTranspose(view * proj));
-	m_sceneConstants.cameraPos = camPos;
-}
-
 void DX12Renderer::OnResize(uint32_t width, uint32_t height)
 {
 	if (width == 0 || height == 0)
@@ -367,7 +314,8 @@ void DX12Renderer::Render()
 	// 1. Systèmes logiques
 	m_transformSystem.Update(m_scene);
 	m_lightSystem.Collect(m_scene);
-	UpdateSceneConstants();
+	const float aspect = m_height > 0 ? (float)m_width / (float)m_height : 1.f;
+	m_cameraSystem.Update(m_scene, aspect, m_sceneConstants);
 
 	// 2. Upload des données de frame
 	auto& fr = m_perFrameCBs[m_frameIndex];
@@ -412,7 +360,7 @@ void DX12Renderer::Render()
 
 	// 6. ImGui
 	m_imgui->BeginFrame();
-	DrawEditorUI();
+	m_editorUI.Draw(m_scene, m_frameIndex, m_adapterName.c_str());
 	m_imgui->Render(cmd);
 
 	// Transition → PRESENT
@@ -452,133 +400,6 @@ void DX12Renderer::Shutdown()
 		{
 			fr.lightCB->Unmap(0, nullptr);
 			fr.lightMapped = nullptr;
-		}
-	}
-}
-
-void DX12Renderer::DrawEditorUI()
-{
-	if (!m_imgui) return;
-
-	ImGuiWindowFlags dockFlags =
-		ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavFocus |
-		ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoBackground;
-
-	const ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(viewport->Pos);
-	ImGui::SetNextWindowSize(viewport->Size);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
-	ImGui::Begin("##DockSpace", nullptr, dockFlags);
-	ImGui::PopStyleVar();
-	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable)
-	{
-		ImGui::DockSpace(ImGui::GetID("MainDock"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-	}
-	ImGui::End();
-
-	if (ImGui::Begin("GPU Stats"))
-	{
-		ImGui::Text("FPS       : %.1f", ImGui::GetIO().Framerate);
-		ImGui::Text("Frame     : %.3f ms", 1000.f / ImGui::GetIO().Framerate);
-		ImGui::Text("Frame idx : %u", m_frameIndex);
-		ImGui::Separator();
-		if (m_adapter)
-		{
-			DXGI_ADAPTER_DESC1 desc;
-			if (SUCCEEDED(m_adapter->Get()->GetDesc1(&desc)))
-			{
-				ImGui::Text("Adapter   : %ls", desc.Description);
-			}
-		}
-	}
-	ImGui::End();
-
-	DrawScenePanel();
-}
-
-void DX12Renderer::DrawScenePanel()
-{
-	if (ImGui::Begin("Scene"))
-	{
-		for (EntityID root : m_scene.GetRootEntities())
-			DrawEntityNode(root);
-	}
-	ImGui::End();
-
-	// Inspecteur de l'entité sélectionnée
-	if (ImGui::Begin("Inspector") && m_selectedEntity != NULL_ENTITY)
-		DrawInspector(m_selectedEntity);
-	ImGui::End();
-}
-
-void DX12Renderer::DrawEntityNode(EntityID id)
-{
-	Entity* e = m_scene.GetEntity(id);
-	if (!e || !e->active) return;
-
-	auto* h = m_scene.GetComponent<HierarchyComponent>(id);
-	bool  hasChildren = h && !h->children.empty();
-
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow |
-		ImGuiTreeNodeFlags_SpanAvailWidth;
-	if (!hasChildren)  flags |= ImGuiTreeNodeFlags_Leaf;
-	if (id == m_selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
-
-	bool open = ImGui::TreeNodeEx((void*)(intptr_t)id, flags, "%s", e->name.c_str());
-
-	if (ImGui::IsItemClicked())
-		m_selectedEntity = id;
-
-	if (open)
-	{
-		if (hasChildren)
-			for (EntityID child : h->children)
-				DrawEntityNode(child);
-		ImGui::TreePop();
-	}
-}
-
-void DX12Renderer::DrawInspector(EntityID id)
-{
-	Entity* e = m_scene.GetEntity(id);
-	if (!e) return;
-
-	// Nom éditable
-	char buf[128];
-	strncpy_s(buf, e->name.c_str(), sizeof(buf));
-	if (ImGui::InputText("##name", buf, sizeof(buf)))
-		e->name = buf;
-
-	ImGui::SameLine();
-	ImGui::Checkbox("Active", &e->active);
-	ImGui::Separator();
-
-	// Transform
-	if (auto* t = m_scene.GetComponent<TransformComponent>(id))
-	{
-		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			if (ImGui::DragFloat3("Position", &t->position.x, 0.01f)) t->dirty = true;
-			if (ImGui::DragFloat3("Rotation", &t->rotation.x, 0.5f))  t->dirty = true;
-			if (ImGui::DragFloat3("Scale", &t->scale.x, 0.01f)) t->dirty = true;
-		}
-	}
-
-	// Light
-	if (auto* l = m_scene.GetComponent<LightComponent>(id))
-	{
-		if (ImGui::CollapsingHeader("Light"))
-		{
-			const char* types[] = { "Directional", "Point", "Spot" };
-			int type = (int)l->type;
-			if (ImGui::Combo("Type", &type, types, 3))
-				l->type = (LightType)type;
-			ImGui::ColorEdit3("Color", &l->color.x);
-			ImGui::DragFloat("Intensity", &l->intensity, 0.01f, 0.f, 10.f);
-			if (l->type != LightType::Directional)
-				ImGui::DragFloat("Range", &l->range, 0.1f, 0.f, 500.f);
 		}
 	}
 }

@@ -34,11 +34,6 @@ private:
     bool CreateConstantBuffers();
     bool CreateSrvHeap();
     void LoadDefaultScene();
-    void UpdateSceneConstants();
-    void DrawEditorUI();
-    void DrawScenePanel();
-    void DrawEntityNode(EntityID id);
-    void DrawInspector(EntityID id);
 
 private:
     // --- Core DX12 ---
@@ -63,8 +58,6 @@ private:
 
     // --- Heap SRV (ImGui + futures textures) ---
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_srvHeap;
-    uint32_t m_srvDescriptorSize = 0;
-    uint32_t m_srvHeapUsed = 0; // prochain slot libre
 
     // --- Constant buffers partagés (scene + lights) ---
     struct PerFrameCB
@@ -81,12 +74,14 @@ private:
     MeshRegistry    m_meshRegistry;
     MaterialRegistry m_materialRegistry;
     TransformSystem m_transformSystem;
+    CameraSystem    m_cameraSystem;
     RenderSystem    m_renderSystem;
     LightSystem     m_lightSystem;
     SceneConstants  m_sceneConstants = {};
 
-    // --- État éditeur ---
-    EntityID m_selectedEntity = NULL_ENTITY;
+    // --- Éditeur ---
+    EditorUI     m_editorUI;
+    std::wstring m_adapterName;
 
     uint32_t       m_frameCount = 2;
     uint32_t       m_frameIndex = 0;

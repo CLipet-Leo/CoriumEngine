@@ -60,7 +60,7 @@ struct CameraComponent
     float farPlane = 1000.f;
     bool  isMain = false; // seule la caméra principale est utilisée
 
-    // Calculés par le RenderSystem
+    // Calculés par le CameraSystem
     XMFLOAT4X4 viewMatrix = {};
     XMFLOAT4X4 projectionMatrix = {};
 };

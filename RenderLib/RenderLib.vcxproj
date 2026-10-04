@@ -218,7 +218,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Core\Renderer.cpp" />
     <ClCompile Include="Core\DX12\DXGIFactory.cpp" />
     <ClCompile Include="Core\DX12\DXGIAdapter.cpp" />
     <ClCompile Include="Core\DX12\DX12Debug.cpp" />
@@ -240,6 +239,8 @@
     <ClCompile Include="Scene\Systems\RenderSystem.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\Systems\TransformSystem.cpp" />
+    <ClCompile Include="Scene\Systems\CameraSystem.cpp" />
+    <ClCompile Include="Editor\EditorUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\DX12\DX12DescriptorHeaps.h" />
@@ -252,7 +253,7 @@
     <ClInclude Include="Core\include\pch.h" />
     <ClInclude Include="Core\include\RenderLib.h" />
     <ClInclude Include="Core\DX12\DX12Renderer.h" />
-    <ClInclude Include="Core\include\ShaderType.h" />
+    <ClInclude Include="Core\include\ShaderTypes.h" />
     <ClInclude Include="Core\public\Renderer.h" />
     <ClInclude Include="Core\DX12\DXGIFactory.h" />
     <ClInclude Include="Core\DX12\DXGIAdapter.h" />
@@ -275,6 +276,8 @@
     <ClInclude Include="Scene\Components.h" />
     <ClInclude Include="Scene\Entity.h" />
     <ClInclude Include="Scene\Systems\TransformSystem.h" />
+    <ClInclude Include="Scene\Systems\CameraSystem.h" />
+    <ClInclude Include="Editor\EditorUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsl" />

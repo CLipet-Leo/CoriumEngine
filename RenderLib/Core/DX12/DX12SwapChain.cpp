@@ -12,7 +12,7 @@ DX12SwapChain::DX12SwapChain(IDXGIFactory4* factory, ID3D12CommandQueue* command
     desc.BufferCount = frameCount;
     desc.Width = width;
     desc.Height = height;
-    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.Format = Format;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     desc.SampleDesc.Count = 1;
@@ -41,7 +41,7 @@ void DX12SwapChain::CreateRenderTargetViews(ID3D12Device* device)
 void DX12SwapChain::Resize(ID3D12Device* device, uint32_t width, uint32_t height)
 {
     m_renderTargets.clear();
-    EVAL_HR(m_swapChain->ResizeBuffers(m_frameCount, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0),
+    EVAL_HR(m_swapChain->ResizeBuffers(m_frameCount, width, height, Format, 0),
         "SwapChain ResizeBuffers failed");
     CreateRenderTargetViews(device);
 }

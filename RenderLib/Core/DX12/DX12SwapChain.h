@@ -3,6 +3,8 @@
 class CORIUM_API DX12SwapChain
 {
 public:
+    static constexpr DXGI_FORMAT Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
     DX12SwapChain() = default;
     DX12SwapChain(IDXGIFactory4* factory, ID3D12CommandQueue* commandQueue,
                   ID3D12Device* device, HWND hWnd,

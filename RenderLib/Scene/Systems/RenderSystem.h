@@ -17,9 +17,6 @@ private:
     // Alloue un constant buffer persistant pour les données par objet
     void CreateObjectConstantBuffer(ID3D12Device* device, uint32_t frameCount);
 
-    // Calcule et upload les données de la caméra principale
-    bool UpdateCameraData(Scene& scene, SceneConstants& outScene);
-
     // Ring buffer de CBVs pour les données par-objet (1 slot par draw par frame)
     static constexpr uint32_t MAX_OBJECTS_PER_FRAME = 512;
 
