@@ -27,5 +27,6 @@ public:
 	static LRESULT WndProcHandler(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 
 private:
-	bool m_initialized = false;
+	bool        m_initialized = false;
+	std::string m_iniPath; // référencé par ImGuiIO::IniFilename
 };

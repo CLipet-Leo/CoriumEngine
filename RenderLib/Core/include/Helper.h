@@ -46,5 +46,14 @@ private:
 #define CE_ASSERT(exp) ((void)(exp))
 #endif
 
+// Dossier de l'exécutable (avec '\' final) : les ressources y sont copiées au build
+inline std::wstring GetExecutableDir()
+{
+    wchar_t exePath[MAX_PATH];
+    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+    std::wstring dir(exePath);
+    return dir.substr(0, dir.find_last_of(L"\\/") + 1);
+}
+
 #define PRINT_W_N(msg) std::wcout << msg << std::endl
 #define PRINT_N(msg)   std::cout  << msg << std::endl

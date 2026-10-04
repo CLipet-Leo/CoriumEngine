@@ -6,15 +6,6 @@
 
 using namespace DirectX;
 
-// Les shaders sont copiés à côté de l'exécutable au build (Shaders\)
-static std::wstring GetShaderPath(const wchar_t* file)
-{
-	wchar_t exePath[MAX_PATH];
-	GetModuleFileNameW(nullptr, exePath, MAX_PATH);
-	std::wstring dir(exePath);
-	return dir.substr(0, dir.find_last_of(L"\\/") + 1) + L"Shaders\\" + file;
-}
-
 extern "C"
 {
 	IRenderer* CreateRenderer() { return new DX12Renderer(); }
@@ -178,7 +169,8 @@ bool DX12Renderer::CreatePipeline()
 #endif
 
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-	const std::wstring shaderPath = GetShaderPath(L"Basic.hlsl");
+	// Shaders\ est copié à côté de l'exécutable au build
+	const std::wstring shaderPath = GetExecutableDir() + L"Shaders\\Basic.hlsl";
 
 	HRESULT hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &m_vertexShader, &errorBlob);
 	if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());

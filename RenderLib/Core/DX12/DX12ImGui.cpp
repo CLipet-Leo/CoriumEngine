@@ -19,6 +19,14 @@ void DX12ImGui::Init(
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;   // layout persistant
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // fenetres flottantes
 
+	// Layout sauvegardé à côté de l'exe, quel que soit le dossier de lancement.
+	// ImGui attend de l'UTF-8 et garde le pointeur : m_iniPath doit survivre au contexte.
+	const std::wstring iniPath = GetExecutableDir() + L"imgui.ini";
+	const int len = WideCharToMultiByte(CP_UTF8, 0, iniPath.c_str(), -1, nullptr, 0, nullptr, nullptr);
+	m_iniPath.resize(len - 1);
+	WideCharToMultiByte(CP_UTF8, 0, iniPath.c_str(), -1, m_iniPath.data(), len, nullptr, nullptr);
+	io.IniFilename = m_iniPath.c_str();
+
 	// Charge une police système en plus haute résolution pour éviter l'aspect flou/pixellisé
 	float fontSize = 18.0f; // Augmente cette valeur pour avoir des textes encore plus grands
 	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", fontSize);
