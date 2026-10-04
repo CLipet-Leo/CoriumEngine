@@ -22,6 +22,8 @@ public:
     HWND GetHwnd() const { return m_hWnd; }
     uint32_t GetClientWidth() const { return m_width; }
     uint32_t GetClientHeight() const { return m_height; }
+    IRenderer& GetRenderer() { return *m_renderer; }
+    Scene&     GetScene() { return m_scene; }
 
 private:
     // Fonction statique pour rediriger vers l’instance (via userdata)
@@ -36,6 +38,7 @@ private:
     HINSTANCE   m_hInstance = nullptr;
 
     IRenderer* m_renderer = nullptr;
+    Scene      m_scene;
 
     // Nom de la classe de fenêtre
     static constexpr const wchar_t* s_windowClassName = L"Win32AppWindowClass";

@@ -1,6 +1,6 @@
 #pragma once
 
-class BufferGeometry
+class CORIUM_API BufferGeometry
 {
 public:
 	explicit BufferGeometry(std::vector<Vertex3> vertexData, std::vector<uint32_t> indexData = {})

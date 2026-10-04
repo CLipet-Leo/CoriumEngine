@@ -2,38 +2,27 @@
 
 class DX12ImGui;
 
-extern "C" {
-    CORIUM_API IRenderer* CreateRenderer();
-    CORIUM_API void       DestroyRenderer(IRenderer*);
-}
-
 class CORIUM_API DX12Renderer : public IRenderer
 {
 public:
     DX12Renderer();
     virtual ~DX12Renderer();
 
-    virtual bool Init(HWND hWnd, uint32_t width, uint32_t height) override;
-    virtual void OnResize(uint32_t width, uint32_t height)         override;
-    virtual void Render()                                          override;
-    virtual void Shutdown()                                        override;
+    bool Init(HWND hWnd, uint32_t width, uint32_t height) override;
+    void OnResize(uint32_t width, uint32_t height)         override;
+    void Render(Scene& scene)                              override;
+    void Shutdown()                                        override;
+    bool HandleWindowMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
-    Scene& GetScene() { return m_scene; }
-
-    // Enregistre un mesh ; l'upload GPU est fait au début de la prochaine frame
-    uint32_t RegisterMesh(const std::string& name, const BufferGeometry& geometry);
-
-    // Crée un matériau ; le PSO est partagé entre matériaux de même état
-    uint32_t CreateMaterial(const MaterialDesc& desc);
-    // À appeler après modification de cull/fill/blend d'un matériau
-    void     RefreshMaterial(uint32_t index);
+    uint32_t RegisterMesh(const std::string& name, const BufferGeometry& geometry) override;
+    uint32_t CreateMaterial(const MaterialDesc& desc) override;
+    void     RefreshMaterial(uint32_t index) override;
 
 private:
     Microsoft::WRL::ComPtr<ID3D12PipelineState> GetPipelineFor(const MaterialDesc& mat);
     bool CreatePipeline();
     bool CreateConstantBuffers();
     bool CreateSrvHeap();
-    void LoadDefaultScene();
 
 private:
     // --- Core DX12 ---
@@ -69,8 +58,7 @@ private:
     };
     std::vector<PerFrameCB> m_perFrameCBs;
 
-    // --- Scène et systèmes ---
-    Scene           m_scene;
+    // --- Ressources et systèmes ---
     MeshRegistry    m_meshRegistry;
     MaterialRegistry m_materialRegistry;
     TransformSystem m_transformSystem;

@@ -62,10 +62,6 @@ bool DX12Renderer::Init(HWND hWnd, uint32_t width, uint32_t height)
 		// Init des systèmes
 		m_renderSystem.Init(m_device->Get(), m_frameCount);
 
-		// Les uploads de meshes sont différés à la première frame
-		LoadDefaultScene();
-
-
 		// ImGui — slot 0 du heap SRV réservé pour la font
 		auto cpuHandle = m_srvHeap->GetCPUDescriptorHandleForHeapStart();
 		auto gpuHandle = m_srvHeap->GetGPUDescriptorHandleForHeapStart();
@@ -242,46 +238,9 @@ void DX12Renderer::RefreshMaterial(uint32_t index)
 		mat->pso = GetPipelineFor(mat->desc);
 }
 
-void DX12Renderer::LoadDefaultScene()
+bool DX12Renderer::HandleWindowMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	// Enregistrement des meshes (upload différé au prochain Render)
-	BoxGeometry cube(1.f);
-	uint32_t cubeIdx = RegisterMesh("cube", cube);
-
-	// Caméra principale
-	Entity cam = m_scene.CreateEntity("Main Camera");
-	auto& camT = *m_scene.GetComponent<TransformComponent>(cam.id);
-	camT.SetPosition(0.f, 1.5f, -4.f);
-	auto& camC = m_scene.AddComponent<CameraComponent>(cam.id);
-	camC.isMain = true;
-	camC.fovY = 60.f;
-
-	// Lumière directionnelle
-	Entity sun = m_scene.CreateEntity("Sun");
-	auto& sunT = *m_scene.GetComponent<TransformComponent>(sun.id);
-	sunT.rotation = { 45.f, 30.f, 0.f };
-	auto& sunL = m_scene.AddComponent<LightComponent>(sun.id);
-	sunL.type = LightType::Directional;
-	sunL.intensity = 1.2f;
-
-	// Cube de test
-	Entity cubeEnt = m_scene.CreateEntity("Cube");
-	auto& cubeM = m_scene.AddComponent<MeshComponent>(cubeEnt.id);
-	cubeM.meshIndex = cubeIdx;
-
-	// Second cube avec un matériau filaire teinté
-	MaterialDesc wireDesc;
-	wireDesc.name = "Wireframe";
-	wireDesc.baseColor = { 0.3f, 1.f, 0.4f, 1.f };
-	wireDesc.fillMode = FillMode::Wireframe;
-	wireDesc.cullMode = CullMode::None;
-	uint32_t wireMat = CreateMaterial(wireDesc);
-
-	Entity wireEnt = m_scene.CreateEntity("Wire Cube");
-	m_scene.GetComponent<TransformComponent>(wireEnt.id)->SetPosition(2.f, 0.f, 0.f);
-	auto& wireM = m_scene.AddComponent<MeshComponent>(wireEnt.id);
-	wireM.meshIndex = cubeIdx;
-	wireM.materialIndex = wireMat;
+	return DX12ImGui::WndProcHandler(hWnd, msg, wParam, lParam) != 0;
 }
 
 uint32_t DX12Renderer::RegisterMesh(const std::string& name, const BufferGeometry& geometry)
@@ -306,16 +265,16 @@ void DX12Renderer::OnResize(uint32_t width, uint32_t height)
 	m_scissorRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
 }
 
-void DX12Renderer::Render()
+void DX12Renderer::Render(Scene& scene)
 {
 	m_fence->WaitForFrame(m_frameIndex);
 	m_meshRegistry.ReleaseCompletedUploads(m_fence->GetCompletedValue());
 
 	// 1. Systèmes logiques
-	m_transformSystem.Update(m_scene);
-	m_lightSystem.Collect(m_scene);
+	m_transformSystem.Update(scene);
+	m_lightSystem.Collect(scene);
 	const float aspect = m_height > 0 ? (float)m_width / (float)m_height : 1.f;
-	m_cameraSystem.Update(m_scene, aspect, m_sceneConstants);
+	m_cameraSystem.Update(scene, aspect, m_sceneConstants);
 
 	// 2. Upload des données de frame
 	auto& fr = m_perFrameCBs[m_frameIndex];
@@ -355,12 +314,12 @@ void DX12Renderer::Render()
 	cmd->SetGraphicsRootConstantBufferView(2, fr.lightCB->GetGPUVirtualAddress());
 
 	// 5. Soumission des draw calls via le RenderSystem (b0 mis à jour par objet)
-	m_renderSystem.Submit(m_scene, cmd, m_frameIndex,
+	m_renderSystem.Submit(scene, cmd, m_frameIndex,
 		m_meshRegistry, m_materialRegistry, m_sceneConstants);
 
 	// 6. ImGui
 	m_imgui->BeginFrame();
-	m_editorUI.Draw(m_scene, m_frameIndex, m_adapterName.c_str());
+	m_editorUI.Draw(scene, m_frameIndex, m_adapterName.c_str());
 	m_imgui->Render(cmd);
 
 	// Transition → PRESENT

@@ -1,12 +1,6 @@
 #include "stdafx.h"
 #include "public/Win32Application.h"
-#include "../RenderLib/Core/DX12/DX12ImGui.h"
 #include <iostream>
-
-// On suppose que ta librairie de rendu fournit ces fonctions externes
-// Pour créer / détruire un renderer concret (DX12 par ex.)
-extern IRenderer* CreateRenderer();
-extern void DestroyRenderer(IRenderer*);
 
 Win32Application::Win32Application()
 {
@@ -100,7 +94,7 @@ void Win32Application::Run()
         else
         {
             // Ici tu peux aussi faire des mises à jour logiques (input, etc.)
-            m_renderer->Render();
+            m_renderer->Render(m_scene);
         }
     }
 }
@@ -149,7 +143,7 @@ LRESULT CALLBACK Win32Application::WndProcStatic(HWND hWnd, UINT message, WPARAM
 
 LRESULT Win32Application::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (DX12ImGui::WndProcHandler(hWnd, message, wParam, lParam))
+    if (m_renderer && m_renderer->HandleWindowMessage(hWnd, message, wParam, lParam))
         return true;
 
     switch (message)

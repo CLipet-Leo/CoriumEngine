@@ -56,12 +56,13 @@ private:
     template<typename T> ComponentMap<T>& GetMap();
 };
 
-// Déclarations des spécialisations (définies dans Scene.cpp)
-template<> ComponentMap<TransformComponent>& Scene::GetMap<TransformComponent>();
-template<> ComponentMap<HierarchyComponent>& Scene::GetMap<HierarchyComponent>();
-template<> ComponentMap<MeshComponent>& Scene::GetMap<MeshComponent>();
-template<> ComponentMap<CameraComponent>& Scene::GetMap<CameraComponent>();
-template<> ComponentMap<LightComponent>& Scene::GetMap<LightComponent>();
+// Spécialisations inline : utilisables hors de la DLL (une spécialisation
+// définie dans Scene.cpp n'est pas exportée)
+template<> inline ComponentMap<TransformComponent>& Scene::GetMap() { return m_transforms; }
+template<> inline ComponentMap<HierarchyComponent>& Scene::GetMap() { return m_hierarchies; }
+template<> inline ComponentMap<MeshComponent>& Scene::GetMap() { return m_meshes; }
+template<> inline ComponentMap<CameraComponent>& Scene::GetMap() { return m_cameras; }
+template<> inline ComponentMap<LightComponent>& Scene::GetMap() { return m_lights; }
 
 // --- Implémentation template (inline) ---
 

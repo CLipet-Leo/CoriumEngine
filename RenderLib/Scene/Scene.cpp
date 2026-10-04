@@ -99,10 +99,3 @@ void Scene::RemoveParent(EntityID child)
     if (auto* t = GetComponent<TransformComponent>(child))
         t->dirty = true;
 }
-
-// Spécialisations GetMap<T>
-template<> ComponentMap<TransformComponent>& Scene::GetMap() { return m_transforms; }
-template<> ComponentMap<HierarchyComponent>& Scene::GetMap() { return m_hierarchies; }
-template<> ComponentMap<MeshComponent>& Scene::GetMap() { return m_meshes; }
-template<> ComponentMap<CameraComponent>& Scene::GetMap() { return m_cameras; }
-template<> ComponentMap<LightComponent>& Scene::GetMap() { return m_lights; }
