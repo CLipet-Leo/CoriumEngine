@@ -366,3 +366,13 @@ FodyWeavers.xsd
 
 #vcpkg
 vcpkg_installed/
+
+# JetBrains Rider
+*.idea/
+
+# Intermédiaires des configs custom (ex. Debug_DX12|Win32 sans IntDir défini)
+[Dd]ebug_*/
+[Rr]elease_*/
+
+# Layout ImGui (régénéré au lancement, propre à chaque dev)
+imgui.ini
