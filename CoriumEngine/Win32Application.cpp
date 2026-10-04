@@ -93,7 +93,8 @@ void Win32Application::Run()
         }
         else
         {
-            // Ici tu peux aussi faire des mises à jour logiques (input, etc.)
+            // Logique de scène, puis rendu
+            m_transformSystem.Update(m_scene);
             m_renderer->Render(m_scene);
         }
     }

@@ -61,7 +61,6 @@ private:
     // --- Ressources et systèmes ---
     MeshRegistry    m_meshRegistry;
     MaterialRegistry m_materialRegistry;
-    TransformSystem m_transformSystem;
     CameraSystem    m_cameraSystem;
     RenderSystem    m_renderSystem;
     LightSystem     m_lightSystem;

@@ -270,8 +270,7 @@ void DX12Renderer::Render(Scene& scene)
 	m_fence->WaitForFrame(m_frameIndex);
 	m_meshRegistry.ReleaseCompletedUploads(m_fence->GetCompletedValue());
 
-	// 1. Systèmes logiques
-	m_transformSystem.Update(scene);
+	// 1. Collecte caméra / lumières depuis la scène
 	m_lightSystem.Collect(scene);
 	const float aspect = m_height > 0 ? (float)m_width / (float)m_height : 1.f;
 	m_cameraSystem.Update(scene, aspect, m_sceneConstants);

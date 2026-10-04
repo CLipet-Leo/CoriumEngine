@@ -1,6 +1,6 @@
 #pragma once
 
-class TransformSystem
+class CORIUM_API TransformSystem
 {
 public:
 	void Update(Scene& scene);

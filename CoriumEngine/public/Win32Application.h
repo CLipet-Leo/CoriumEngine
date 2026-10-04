@@ -39,6 +39,7 @@ private:
 
     IRenderer* m_renderer = nullptr;
     Scene      m_scene;
+    TransformSystem m_transformSystem;
 
     // Nom de la classe de fenêtre
     static constexpr const wchar_t* s_windowClassName = L"Win32AppWindowClass";
