@@ -1,4 +1,5 @@
 # Copilot Instructions
 
-## Project Guidelines
-- CoriumEngine: never put #include directives in .h files; all includes go through the precompiled header pch.h and dedicated include files (RenderLib/Core/include).
+Les instructions du projet sont dans `AGENTS.md` à la racine du dépôt : les lire et les suivre.
+
+Règle critique : jamais de `#include` dans les `.h`, tout passe par les PCH (`pch.h`, `RenderLib/Core/include/Core.h`, `stdafx.h`).
