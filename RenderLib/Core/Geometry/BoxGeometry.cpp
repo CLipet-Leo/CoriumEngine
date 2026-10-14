@@ -1,12 +1,11 @@
 #include "pch.h"
-#include "Types.h"
 #include "BufferGeometry.h"
 #include "BoxGeometry.h"
 
 BoxGeometry::BoxGeometry(float size)
 	: BufferGeometry([](float half)
 		{
-			return std::vector<Vertex3>
+			return std::vector<Vec3>
 			{
 				// Face +Z
 				{-half, -half, +half}, {+half, -half, +half}, {+half, +half, +half},

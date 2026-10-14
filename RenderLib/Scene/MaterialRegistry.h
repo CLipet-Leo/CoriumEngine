@@ -10,7 +10,7 @@ enum class BlendMode : uint8_t { Opaque, AlphaBlend };
 struct MaterialDesc
 {
 	std::string name;
-	XMFLOAT4    baseColor = { 1.f, 1.f, 1.f, 1.f }; // multiplié par la couleur du vertex
+	Vec4   		baseColor = { 1.f, 1.f, 1.f, 1.f }; // multiplié par la couleur du vertex
 	CullMode    cullMode = CullMode::Back;
 	FillMode    fillMode = FillMode::Solid;
 	BlendMode   blendMode = BlendMode::Opaque;

@@ -1,29 +1,34 @@
 #pragma once
 
-using namespace DirectX;
-
 // -------------------------------------------------------
 // Transform — position, rotation, scale + matrice world
 // -------------------------------------------------------
 struct TransformComponent
 {
-    XMFLOAT3 position = { 0.f, 0.f, 0.f };
-    XMFLOAT3 rotation = { 0.f, 0.f, 0.f }; // Euler en degrés
-    XMFLOAT3 scale = { 1.f, 1.f, 1.f };
+    Vec3 position = { 0.f, 0.f, 0.f };
+    Quat rotation = { 0.f, 0.f, 0.f, 1.f };
+    Vec3 scale = { 1.f, 1.f, 1.f };
 
     // Calculé par le TransformSystem — ne pas modifier manuellement
-    XMFLOAT4X4 localMatrix = {};
-    XMFLOAT4X4 worldMatrix = {};
+    Mat4 localMatrix = {};
+    Mat4 worldMatrix = {};
     bool        dirty = true; // true = recalcul nécessaire
 
-    XMMATRIX GetWorldMatrix() const
+    Mat4 GetWorldMatrix() const
     {
-        return XMLoadFloat4x4(&worldMatrix);
+        return worldMatrix;
     }
 
     void SetPosition(float x, float y, float z)
     {
         position = { x, y, z };
+        dirty = true;
+    }
+
+    // euler = (pitch, yaw, roll) en degrés, cf. FromEulerDeg
+    void SetRotationDeg(const Vec3& euler)
+    {
+        rotation = FromEulerDeg(euler);
         dirty = true;
     }
 };
@@ -59,10 +64,6 @@ struct CameraComponent
     float nearPlane = 0.1f;
     float farPlane = 1000.f;
     bool  isMain = false; // seule la caméra principale est utilisée
-
-    // Calculés par le CameraSystem
-    XMFLOAT4X4 viewMatrix = {};
-    XMFLOAT4X4 projectionMatrix = {};
 };
 
 // -------------------------------------------------------
@@ -73,7 +74,7 @@ enum class LightType : uint8_t { Directional, Point, Spot };
 struct LightComponent
 {
     LightType type = LightType::Point;
-    XMFLOAT3  color = { 1.f, 1.f, 1.f };
+    Vec3  color = { 1.f, 1.f, 1.f };
     float     intensity = 1.f;
     float     range = 10.f;   // pour Point et Spot
     float     spotAngle = 30.f;   // pour Spot, en degrés

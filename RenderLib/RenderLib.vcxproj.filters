@@ -75,6 +75,9 @@
     <ClCompile Include="Scene\Systems\CameraSystem.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Math\MathSelfCheck.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
     <ClCompile Include="Editor\EditorUI.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -140,9 +143,6 @@
     <ClInclude Include="Core\DX12\DX12DepthStencil.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Geometry\Types.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Geometry\BufferGeometry.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -186,6 +186,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Core\include\ShaderTypes.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Math.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Scene\MeshRegistry.h">

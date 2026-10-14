@@ -102,7 +102,17 @@ void EditorUI::DrawInspector(Scene& scene, EntityID id)
 		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			if (ImGui::DragFloat3("Position", &t->position.x, 0.01f)) t->dirty = true;
-			if (ImGui::DragFloat3("Rotation", &t->rotation.x, 0.5f))  t->dirty = true;
+			if (m_eulerEntity != id || memcmp(&m_eulerSource, &t->rotation, sizeof(Quat)) != 0)
+			{
+				m_eulerEntity = id;
+				m_eulerSource = t->rotation;
+				m_euler = ToEulerDeg(t->rotation);
+			}
+			if (ImGui::DragFloat3("Rotation", &m_euler.x, 0.5f))
+			{
+				t->SetRotationDeg(m_euler);
+				m_eulerSource = t->rotation;
+			}
 			if (ImGui::DragFloat3("Scale", &t->scale.x, 0.01f)) t->dirty = true;
 		}
 	}

@@ -4,8 +4,6 @@
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-using namespace DirectX;
-
 extern "C"
 {
 	IRenderer* CreateRenderer() { return new DX12Renderer(); }
@@ -27,6 +25,7 @@ bool DX12Renderer::Init(HWND hWnd, uint32_t width, uint32_t height)
 		m_height = height;
 
 #if defined(_DEBUG)
+		MathSelfCheck();
 		m_debug = std::make_unique<DX12Debug>();
 #endif
 		m_factory = std::make_unique<DXGIFactory>();
@@ -274,7 +273,7 @@ void DX12Renderer::Render(Scene& scene)
 	// 1. Collecte caméra / lumières depuis la scène
 	m_lightSystem.Collect(scene);
 	const float aspect = m_height > 0 ? (float)m_width / (float)m_height : 1.f;
-	m_cameraSystem.Update(scene, aspect, m_sceneConstants);
+	const Mat4 viewProj = m_cameraSystem.Update(scene, aspect, m_sceneConstants);
 
 	// 2. Upload des données de frame
 	auto& fr = m_perFrameCBs[m_frameIndex];
@@ -315,7 +314,7 @@ void DX12Renderer::Render(Scene& scene)
 
 	// 5. Soumission des draw calls via le RenderSystem (b0 mis à jour par objet)
 	m_renderSystem.Submit(scene, cmd, m_frameIndex,
-		m_meshRegistry, m_materialRegistry, m_sceneConstants);
+		m_meshRegistry, m_materialRegistry, viewProj);
 
 	// 6. ImGui
 	m_imgui->BeginFrame();

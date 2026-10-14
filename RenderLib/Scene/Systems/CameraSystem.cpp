@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "CameraSystem.h"
 
-void CameraSystem::Update(Scene& scene, float aspectRatio, SceneConstants& outScene)
+Mat4 CameraSystem::Update(Scene& scene, float aspectRatio, SceneConstants& outScene)
 {
-    XMMATRIX view = XMMatrixIdentity();
-    XMMATRIX proj = XMMatrixIdentity();
-    XMFLOAT3 camPos = { 0.f, 0.f, 0.f };
+    Mat4 view = Identity();
+    Mat4 proj = Identity();
+    Vec3 camPos = { 0.f, 0.f, 0.f };
 
     for (auto& [id, cam] : scene.Cameras())
     {
@@ -13,25 +13,18 @@ void CameraSystem::Update(Scene& scene, float aspectRatio, SceneConstants& outSc
         auto* t = scene.GetComponent<TransformComponent>(id);
         if (!t) continue;
 
-        XMMATRIX R = XMMatrixRotationRollPitchYaw(
-            XMConvertToRadians(t->rotation.x),
-            XMConvertToRadians(t->rotation.y),
-            XMConvertToRadians(t->rotation.z));
+        // Repère monde de la caméra (hiérarchie incluse) : ligne 1 = up, 2 = forward, 3 = position
+        const Mat4& w = t->worldMatrix;
+        camPos = GetRow(w, 3);
+        view = LookToLH(camPos, GetRow(w, 2), GetRow(w, 1));
 
-        XMVECTOR eye = XMLoadFloat3(&t->position);
-        XMVECTOR forward = XMVector3TransformNormal(XMVectorSet(0, 0, 1, 0), R);
-        XMVECTOR up = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), R);
-        view = XMMatrixLookToLH(eye, forward, up);
-        camPos = t->position;
+        proj = PerspectiveFovLH(cam.fovY * kDegToRad, aspectRatio, cam.nearPlane, cam.farPlane);
 
-        proj = XMMatrixPerspectiveFovLH(
-            XMConvertToRadians(cam.fovY), aspectRatio, cam.nearPlane, cam.farPlane);
-
-        XMStoreFloat4x4(&cam.viewMatrix, view);
-        XMStoreFloat4x4(&cam.projectionMatrix, proj);
         break;
     }
 
-    XMStoreFloat4x4(&outScene.viewProj, XMMatrixTranspose(view * proj));
+    const Mat4 viewProj = view * proj;
+    outScene.viewProj = Transpose(viewProj);
     outScene.cameraPos = camPos;
+    return viewProj;
 }

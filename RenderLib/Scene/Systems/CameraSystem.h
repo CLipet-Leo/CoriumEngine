@@ -3,6 +3,7 @@
 class CORIUM_API CameraSystem
 {
 public:
-    // Calcule view/proj de la caméra principale et remplit les constantes de scène
-    void Update(Scene& scene, float aspectRatio, SceneConstants& outScene);
+    // Calcule view/proj de la caméra principale, remplit les constantes de scène (transposées)
+    // et retourne viewProj non transposée
+    Mat4 Update(Scene& scene, float aspectRatio, SceneConstants& outScene);
 };

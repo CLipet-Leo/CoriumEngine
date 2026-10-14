@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Helper.h"
+#include "../../Math/Math.h"
 #include "ShaderTypes.h"
 #include "../public/Renderer.h"
 
 // Géométrie
-#include "../Geometry/Types.h"
 #include "../Geometry/BufferGeometry.h"
 #include "../Geometry/BoxGeometry.h"
 

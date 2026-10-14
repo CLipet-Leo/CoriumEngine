@@ -18,7 +18,7 @@ static void LoadDemoScene(IRenderer& renderer, Scene& scene)
     camC.fovY = 60.f;
 
     Entity sun = scene.CreateEntity("Sun");
-    scene.GetComponent<TransformComponent>(sun.id)->rotation = { 45.f, 30.f, 0.f };
+    scene.GetComponent<TransformComponent>(sun.id)->SetRotationDeg({ 45.f, 30.f, 0.f });
     auto& sunL = scene.AddComponent<LightComponent>(sun.id);
     sunL.type = LightType::Directional;
     sunL.intensity = 1.2f;

@@ -19,30 +19,22 @@ void LightSystem::Collect(Scene& scene)
 
         if (light.type == LightType::Directional)
         {
-            // Pour les directionnelles, on encode la direction depuis la rotation
+            // Directionnelle : axe Z monde de l'entité
             if (transform)
-            {
-                // Direction dérivée de la rotation (axe Z local transformé)
-                XMMATRIX R = XMMatrixRotationRollPitchYaw(
-                    XMConvertToRadians(transform->rotation.x),
-                    XMConvertToRadians(transform->rotation.y),
-                    XMConvertToRadians(transform->rotation.z));
-                XMVECTOR dir = XMVector3TransformNormal(XMVectorSet(0, 0, 1, 0), R);
-                XMStoreFloat3(&gpu.positionOrDirection, dir);
-            }
+                gpu.positionOrDirection = Normalize(GetRow(transform->worldMatrix, 2));
         }
         else
         {
-            // Pour point/spot : on encode la position
+            // Point/spot : position monde
             if (transform)
-                gpu.positionOrDirection = transform->position;
+                gpu.positionOrDirection = GetRow(transform->worldMatrix, 3);
         }
 
         gpu.type = static_cast<float>(light.type);
         gpu.color = light.color;
         gpu.intensity = light.intensity;
         gpu.range = light.range;
-        gpu.spotAngle = XMConvertToRadians(light.spotAngle);
+        gpu.spotAngle = light.spotAngle * kDegToRad;
 
         ++count;
     }

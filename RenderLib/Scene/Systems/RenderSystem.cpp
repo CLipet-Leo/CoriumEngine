@@ -33,15 +33,11 @@ void RenderSystem::CreateObjectConstantBuffer(ID3D12Device* device, uint32_t fra
 void RenderSystem::Submit(Scene& scene, ID3D12GraphicsCommandList* cmdList,
     uint32_t frameIndex, const MeshRegistry& meshRegistry,
     const MaterialRegistry& materialRegistry,
-    const SceneConstants& sceneData)
+    const Mat4& viewProj)
 {
     auto& fr = m_frameResources[frameIndex];
     fr.usedSlots = 0;
     ID3D12PipelineState* boundPso = nullptr;
-
-    // Précalcul de ViewProj depuis sceneData
-    // sceneData.viewProj est stockée transposée pour le GPU
-    XMMATRIX viewProj = XMMatrixTranspose(XMLoadFloat4x4(&sceneData.viewProj));
 
     for (auto& [id, mesh] : scene.Meshes())
     {
@@ -70,10 +66,10 @@ void RenderSystem::Submit(Scene& scene, ID3D12GraphicsCommandList* cmdList,
 
         // Construction des données par objet
         ObjectConstants objData;
-        const XMMATRIX world = XMLoadFloat4x4(&transform->worldMatrix);
+        const Mat4& world = transform->worldMatrix;
 
-        XMStoreFloat4x4(&objData.world, XMMatrixTranspose(world));
-        XMStoreFloat4x4(&objData.worldViewProj, XMMatrixTranspose(world * viewProj));
+        objData.world = Transpose(world);
+        objData.worldViewProj = Transpose(world * viewProj);
         objData.baseColor = material->desc.baseColor;
 
         // Upload dans le slot du ring buffer

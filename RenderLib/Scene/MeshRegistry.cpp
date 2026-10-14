@@ -1,12 +1,11 @@
 #include "pch.h"
 #include "MeshRegistry.h"
-#include "../Core/Geometry/Types.h"
 
 // Vertex GPU — position + couleur générée proceduralement
 struct MeshVertex
 {
-    DirectX::XMFLOAT3 position;
-    DirectX::XMFLOAT4 color;
+    Vec3 position;
+    Vec4 color;
 };
 
 uint32_t MeshRegistry::Register(const std::string& name, const BufferGeometry& geometry,

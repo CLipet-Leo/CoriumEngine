@@ -11,7 +11,7 @@ public:
         uint32_t                   frameIndex,
         const MeshRegistry& meshRegistry,
         const MaterialRegistry& materialRegistry,
-        const SceneConstants& sceneData);
+        const Mat4& viewProj);
 
 private:
     // Alloue un constant buffer persistant pour les données par objet

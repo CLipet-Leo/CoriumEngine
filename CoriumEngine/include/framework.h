@@ -9,6 +9,7 @@
 #include <optional>
 #include <memory>
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <sstream>
 #include <iostream>
