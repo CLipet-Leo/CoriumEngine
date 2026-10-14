@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            // Reflète Debug_DX12 des .vcxproj. Les .h n'ont aucun #include : on force le PCH
+            // pour qu'IntelliSense les analyse correctement.
+            "name": "Debug_DX12",
+            "intelliSenseMode": "windows-msvc-x64",
+            "cppStandard": "c++20",
+            "cStandard": "c17",
+            "includePath": [
+                "${workspaceFolder}/RenderLib/Core/include",
+                "${workspaceFolder}/CoriumEngine/include",
+                "${workspaceFolder}/CoriumEngine",
+                "${workspaceFolder}/vcpkg_installed/x64-windows/include"
+            ],
+            "forcedInclude": [
+                "${workspaceFolder}/RenderLib/Core/include/pch.h"
+            ],
+            "defines": [
+                "_DEBUG",
+                "_WINDOWS",
+                "USE_DX12",
+                "RENDERER_EXPORTS",
+                "UNICODE",
+                "_UNICODE"
+            ]
+        }
+    ],
+    "version": 4
+}

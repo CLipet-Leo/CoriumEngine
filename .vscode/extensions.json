@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-vscode.cpptools",
+        "timgjones.hlsltools"
+    ],
+    // clangd entre en conflit avec cpptools et n'a pas de compile_commands.json (MSBuild)
+    "unwantedRecommendations": [
+        "llvm-vs-code-extensions.vscode-clangd"
+    ]
+}
