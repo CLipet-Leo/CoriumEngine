@@ -15,9 +15,14 @@ vitesse d'arrivée du multiplateforme.
   actuel, nécessaires à l'éclairage ; les retirer casserait le layout partagé avec le CPU).
 - Reste pour la spec 3 : masquer DirectX à l'exe (PCH public/privé).
 
-## 2. Prérequis de l'éditeur
+## 2. Prérequis de l'éditeur — terminé
 Ordre : `dt` → input + caméra éditeur → sérialisation (la caméra aide à vérifier les scènes
 chargées).
+
+Fait : `Clock` et `Input` (`RenderLib/Core/Platform`), `EditorCamera` (exe),
+`Render(scene, const CameraView*)`, `IRenderer::WantCaptureMouse`, UUID d'entité,
+`SceneSerializer` + `doc/SceneFormat.md`, `Assets/Scenes/Demo.scene` (remplace `LoadDemoScene`),
+self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `Save` existe).
 
 ### `Update(dt)`
 - Classe `Clock` dans RenderLib (`std::chrono::steady_clock`) : `Tick()` une fois par frame,
@@ -38,7 +43,7 @@ chargées).
 
 ### Caméra éditeur
 - **Hors scène** : jamais sérialisée, ne touche pas la caméra `isMain` du jeu.
-- Contrôleur dans l'exe (puis `CoriumEditor/`), clic droit + WASD.
+- Contrôleur dans l'exe (puis `CoriumEditor/`), clic droit + ZQSD (A/E : bas/haut).
 - Le renderer accepte une vue externe (ex. `Render(scene, const CameraView*)`) ; sans vue,
   il utilise la caméra `isMain` (runtime). Réutilisé par le Viewport de la spec 3.
 
@@ -54,7 +59,8 @@ chargées).
   - `materials:` `MaterialDesc` nommés, dans la scène pour l'instant (fichiers séparés quand il
     y aura un navigateur d'assets).
   - `entities:` composants avec mesh/matériau référencés **par nom**, jamais par index runtime
-    (ajouter un `Find` au `MeshRegistry`).
+    (table nom → index propre au fichier, construite au chargement ; `RegisterMesh` prend un
+    `MeshDesc` pour pouvoir réécrire le mesh).
 - Identité persistante : chaque `Entity` porte un **UUID 64 bits** aléatoire (`std::mt19937_64`
   initialisé par `std::random_device`), généré à la création, conservé au chargement. C'est lui
   qui est sérialisé et qui référence le parent. L'`EntityID` runtime (`uint32_t` incrémental)

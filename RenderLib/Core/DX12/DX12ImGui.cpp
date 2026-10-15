@@ -85,3 +85,8 @@ LRESULT DX12ImGui::WndProcHandler(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	return ImGui_ImplWin32_WndProcHandler(hwnd, msg, wp, lp);
 }
+
+bool DX12ImGui::WantCaptureMouse()
+{
+	return ImGui::GetCurrentContext() && ImGui::GetIO().WantCaptureMouse;
+}

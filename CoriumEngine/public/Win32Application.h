@@ -41,6 +41,10 @@ private:
     Scene      m_scene;
     TransformSystem m_transformSystem;
 
+    Clock        m_clock;
+    Input        m_input;
+    EditorCamera m_editorCamera;
+
     // Nom de la classe de fenêtre
     static constexpr const wchar_t* s_windowClassName = L"Win32AppWindowClass";
 };

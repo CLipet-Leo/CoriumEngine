@@ -7,11 +7,9 @@ using ComponentMap = std::unordered_map<EntityID, T>;
 class CORIUM_API Scene
 {
 public:
-    Scene() = default;
-    ~Scene() = default;
-
     // --- Gestion des entités ---
-    Entity  CreateEntity(const std::string& name = "Entity");
+    // uuid : NULL_UUID = en générer un (aléatoire 64 bits) ; sinon celui d'un fichier chargé
+    Entity  CreateEntity(const std::string& name = "Entity", EntityUUID uuid = NULL_UUID);
     void    DestroyEntity(EntityID id);
     Entity* GetEntity(EntityID id);
     bool    IsValid(EntityID id) const;

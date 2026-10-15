@@ -122,6 +122,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Scene\SceneSerializer.cpp" />
+    <ClCompile Include="Core\Platform\Input.cpp" />
     <ClCompile Include="Core\DX12\DX12Renderer.cpp" />
     <ClCompile Include="Core\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -154,6 +156,9 @@
     <ClCompile Include="Math\MathSelfCheck.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Scene\SceneSerializer.h" />
+    <ClInclude Include="Core\Platform\Input.h" />
+    <ClInclude Include="Core\Platform\Clock.h" />
     <ClInclude Include="Core\DX12\DX12DescriptorHeaps.h" />
     <ClInclude Include="Core\DX12\DX12MemoryManager.h" />
     <ClInclude Include="Core\DX12\DX12PSOCache.h" />

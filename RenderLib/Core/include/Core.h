@@ -3,6 +3,8 @@
 #include "Helper.h"
 #include "../../Math/Math.h"
 #include "ShaderTypes.h"
+#include "../Platform/Clock.h"
+#include "../Platform/Input.h"
 #include "../public/Renderer.h"
 
 // Géométrie
@@ -15,6 +17,7 @@
 #include "../../Scene/Scene.h"
 #include "../../Scene/MeshRegistry.h"
 #include "../../Scene/MaterialRegistry.h"
+#include "../../Scene/SceneSerializer.h"
 
 // Systèmes
 #include "../../Scene/Systems/TransformSystem.h"

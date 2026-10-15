@@ -10,13 +10,16 @@ public:
 
     bool Init(HWND hWnd, uint32_t width, uint32_t height) override;
     void OnResize(uint32_t width, uint32_t height)         override;
-    void Render(Scene& scene)                              override;
+    void Render(Scene& scene, const CameraView* view)      override;
     void Shutdown()                                        override;
     bool HandleWindowMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
+    bool WantCaptureMouse() const override;
 
-    uint32_t RegisterMesh(const std::string& name, const BufferGeometry& geometry) override;
+    uint32_t RegisterMesh(const MeshDesc& desc) override;
     uint32_t CreateMaterial(const MaterialDesc& desc) override;
     void     RefreshMaterial(uint32_t index) override;
+    const MeshDesc*     GetMeshDesc(uint32_t index) const override;
+    const MaterialDesc* GetMaterialDesc(uint32_t index) const override;
 
 private:
     Microsoft::WRL::ComPtr<ID3D12PipelineState> GetPipelineFor(const MaterialDesc& mat);

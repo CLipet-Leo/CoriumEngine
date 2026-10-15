@@ -26,6 +26,9 @@ public:
 	// Passe la fenêtre Win32 pour la gestion input
 	static LRESULT WndProcHandler(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 
+	// io.WantCaptureMouse du contexte courant (false si ImGui n'est pas initialisé)
+	static bool WantCaptureMouse();
+
 private:
 	bool        m_initialized = false;
 	std::string m_iniPath; // référencé par ImGuiIO::IniFilename

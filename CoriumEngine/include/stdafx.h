@@ -12,3 +12,5 @@
 #include "RenderLib.h"
 #include "CoreDefinition.h"
 #include "Core.h"
+
+#include "../public/EditorCamera.h"

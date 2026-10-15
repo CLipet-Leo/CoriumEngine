@@ -243,9 +243,26 @@ bool DX12Renderer::HandleWindowMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 	return DX12ImGui::WndProcHandler(hWnd, msg, wParam, lParam) != 0;
 }
 
-uint32_t DX12Renderer::RegisterMesh(const std::string& name, const BufferGeometry& geometry)
+bool DX12Renderer::WantCaptureMouse() const
 {
-	return m_meshRegistry.Register(name, geometry, m_device->Get());
+	return DX12ImGui::WantCaptureMouse();
+}
+
+uint32_t DX12Renderer::RegisterMesh(const MeshDesc& desc)
+{
+	return m_meshRegistry.Register(desc, m_device->Get());
+}
+
+const MeshDesc* DX12Renderer::GetMeshDesc(uint32_t index) const
+{
+	const GpuMesh* mesh = m_meshRegistry.Get(index);
+	return mesh ? &mesh->desc : nullptr;
+}
+
+const MaterialDesc* DX12Renderer::GetMaterialDesc(uint32_t index) const
+{
+	const Material* material = m_materialRegistry.Get(index);
+	return material ? &material->desc : nullptr;
 }
 
 void DX12Renderer::OnResize(uint32_t width, uint32_t height)
@@ -265,7 +282,7 @@ void DX12Renderer::OnResize(uint32_t width, uint32_t height)
 	m_scissorRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
 }
 
-void DX12Renderer::Render(Scene& scene)
+void DX12Renderer::Render(Scene& scene, const CameraView* view)
 {
 	m_fence->WaitForFrame(m_frameIndex);
 	m_meshRegistry.ReleaseCompletedUploads(m_fence->GetCompletedValue());
@@ -273,7 +290,7 @@ void DX12Renderer::Render(Scene& scene)
 	// 1. Collecte caméra / lumières depuis la scène
 	m_lightSystem.Collect(scene);
 	const float aspect = m_height > 0 ? (float)m_width / (float)m_height : 1.f;
-	const Mat4 viewProj = m_cameraSystem.Update(scene, aspect, m_sceneConstants);
+	const Mat4 viewProj = m_cameraSystem.Update(scene, aspect, m_sceneConstants, view);
 
 	// 2. Upload des données de frame
 	auto& fr = m_perFrameCBs[m_frameIndex];

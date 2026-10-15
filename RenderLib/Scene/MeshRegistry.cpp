@@ -8,13 +8,15 @@ struct MeshVertex
     Vec4 color;
 };
 
-uint32_t MeshRegistry::Register(const std::string& name, const BufferGeometry& geometry,
-    ID3D12Device* device)
+uint32_t MeshRegistry::Register(const MeshDesc& desc, ID3D12Device* device)
 {
     // Si déjà enregistré, retourne l'index existant
-    auto it = m_nameIndex.find(name);
+    auto it = m_nameIndex.find(desc.name);
     if (it != m_nameIndex.end())
         return it->second;
+
+    // Box est la seule primitive pour l'instant
+    const BoxGeometry geometry(desc.size);
 
     const auto& verts = geometry.GetVertices();
     CE_ASSERT(!verts.empty());
@@ -37,7 +39,7 @@ uint32_t MeshRegistry::Register(const std::string& name, const BufferGeometry& g
     const UINT totalSize = ibOffset + ibSize;
 
     GpuMesh mesh;
-    mesh.name = name;
+    mesh.desc = desc;
     mesh.vertexCount = static_cast<uint32_t>(gpuVerts.size());
     mesh.indexCount = static_cast<uint32_t>(indices.size());
 
@@ -82,7 +84,7 @@ uint32_t MeshRegistry::Register(const std::string& name, const BufferGeometry& g
     mesh.uploaded = false;
 
     uint32_t index = static_cast<uint32_t>(m_meshes.size());
-    m_nameIndex[name] = index;
+    m_nameIndex[desc.name] = index;
     m_meshes.push_back(std::move(mesh));
     m_pendingUploads.push_back(index);
 

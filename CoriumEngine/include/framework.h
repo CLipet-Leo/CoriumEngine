@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <chrono>
+#include <array>
 #include <sstream>
 #include <iostream>
 #include <stdexcept>

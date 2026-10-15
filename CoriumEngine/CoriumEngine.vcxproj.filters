@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="public\EditorCamera.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
     <ClInclude Include="include\framework.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -32,6 +35,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EditorCamera.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -54,5 +60,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CoriumEngine.aps" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\Assets\**\*.*" />
   </ItemGroup>
 </Project>

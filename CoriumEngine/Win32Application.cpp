@@ -65,6 +65,8 @@ bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, uint32_t wi
     if (!m_hWnd)
         return false;
 
+    m_input.Init(m_hWnd);
+
     ShowWindow(m_hWnd, nCmdShow);
     UpdateWindow(m_hWnd);
 
@@ -93,9 +95,14 @@ void Win32Application::Run()
         }
         else
         {
+            m_clock.Tick();
+            m_editorCamera.Update(m_clock.DeltaTime(), m_input, m_renderer->WantCaptureMouse());
+            m_input.EndFrame();
+
             // Logique de scène, puis rendu
             m_transformSystem.Update(m_scene);
-            m_renderer->Render(m_scene);
+            const CameraView view = m_editorCamera.GetView();
+            m_renderer->Render(m_scene, &view);
         }
     }
 }
@@ -144,6 +151,9 @@ LRESULT CALLBACK Win32Application::WndProcStatic(HWND hWnd, UINT message, WPARAM
 
 LRESULT Win32Application::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    // L'input voit tous les messages, même ceux de l'UI : le filtrage se fait à la lecture
+    m_input.OnMessage(message, wParam, lParam);
+
     if (m_renderer && m_renderer->HandleWindowMessage(hWnd, message, wParam, lParam))
         return true;
 

@@ -5,41 +5,6 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
-// Contenu de démo : caméra, soleil, un cube plein et un cube filaire
-static void LoadDemoScene(IRenderer& renderer, Scene& scene)
-{
-    BoxGeometry cube(1.f);
-    uint32_t cubeIdx = renderer.RegisterMesh("cube", cube);
-
-    Entity cam = scene.CreateEntity("Main Camera");
-    scene.GetComponent<TransformComponent>(cam.id)->SetPosition(0.f, 1.5f, -4.f);
-    auto& camC = scene.AddComponent<CameraComponent>(cam.id);
-    camC.isMain = true;
-    camC.fovY = 60.f;
-
-    Entity sun = scene.CreateEntity("Sun");
-    scene.GetComponent<TransformComponent>(sun.id)->SetRotationDeg({ 45.f, 30.f, 0.f });
-    auto& sunL = scene.AddComponent<LightComponent>(sun.id);
-    sunL.type = LightType::Directional;
-    sunL.intensity = 1.2f;
-
-    Entity cubeEnt = scene.CreateEntity("Cube");
-    scene.AddComponent<MeshComponent>(cubeEnt.id).meshIndex = cubeIdx;
-
-    MaterialDesc wireDesc;
-    wireDesc.name = "Wireframe";
-    wireDesc.baseColor = { 0.3f, 1.f, 0.4f, 1.f };
-    wireDesc.fillMode = FillMode::Wireframe;
-    wireDesc.cullMode = CullMode::None;
-    uint32_t wireMat = renderer.CreateMaterial(wireDesc);
-
-    Entity wireEnt = scene.CreateEntity("Wire Cube");
-    scene.GetComponent<TransformComponent>(wireEnt.id)->SetPosition(2.f, 0.f, 0.f);
-    auto& wireM = scene.AddComponent<MeshComponent>(wireEnt.id);
-    wireM.meshIndex = cubeIdx;
-    wireM.materialIndex = wireMat;
-}
-
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pCmdLine*/, int nCmdShow)
 {
     const uint32_t initialWidth = 800;
@@ -52,7 +17,20 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
         if (!app.Initialize(hInstance, nCmdShow, initialWidth, initialHeight))
             return -1;
 
-        LoadDemoScene(app.GetRenderer(), app.GetScene());
+        // Assets\ est copié à côté de l'exécutable au build
+        const std::wstring scenePath = GetExecutableDir() + L"Assets\\Scenes\\Demo.scene";
+        std::string error;
+        if (SceneSerializer::Load(scenePath, app.GetScene(), app.GetRenderer(), &error))
+        {
+#if defined(_DEBUG)
+            SceneSerializer::SelfCheck(scenePath, app.GetRenderer());
+#endif
+        }
+        else
+        {
+            MessageBoxA(app.GetHwnd(), error.c_str(), "Demo.scene", MB_ICONERROR);
+        }
+
         app.Run();
 
         app.Shutdown();

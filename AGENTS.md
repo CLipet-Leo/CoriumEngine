@@ -17,8 +17,9 @@ Moteur 3D C++ / DirectX 12, Windows x64 uniquement.
 ```
 
 Configs : `Debug_DX12`, `Release`. Sortie : `Build/<Config>/`. Les shaders (`RenderLib/Shaders`)
-sont copiés à côté de l'exe au build (`CopyFileToFolders`) ; les ressources se résolvent via
-`GetExecutableDir()` (Helper.h), jamais relativement au dossier courant.
+et `Assets/` (scènes, cf. `doc/SceneFormat.md`) sont copiés à côté de l'exe au build
+(`CopyFileToFolders`) ; les ressources se résolvent via `GetExecutableDir()` (Helper.h), jamais
+relativement au dossier courant.
 
 ## Conventions
 
@@ -37,8 +38,13 @@ sont copiés à côté de l'exe au build (`CopyFileToFolders`) ; les ressources 
 ## Architecture
 
 - API publique : `IRenderer` (`RenderLib/Core/public/Renderer.h`), créé par `CreateRenderer()`.
-- La `Scene` (ECS, `RenderLib/Scene`) appartient à l'application. Boucle :
-  `TransformSystem::Update(scene)` puis `IRenderer::Render(scene)`.
+- La `Scene` (ECS, `RenderLib/Scene`) appartient à l'application. Boucle (`Win32Application::Run`) :
+  `Clock::Tick` → `EditorCamera::Update(dt, input)` → `Input::EndFrame` →
+  `TransformSystem::Update(scene)` → `IRenderer::Render(scene, &editorView)`.
+- `Input` (état brut, Raw Input) est alimenté par le WndProc de l'exe, sans dépendance à ImGui ;
+  le filtrage UI passe par `IRenderer::WantCaptureMouse`.
+- Entités : `EntityID` runtime (clé des `ComponentMap`, jamais écrit) + `uuid` 64 bits persistant.
+  Scènes chargées/sauvées par `SceneSerializer`.
 - Le renderer possède Camera/Light/Render systems, les registres mesh/matériaux et l'UI
   éditeur ImGui (`RenderLib/Editor/EditorUI`).
 

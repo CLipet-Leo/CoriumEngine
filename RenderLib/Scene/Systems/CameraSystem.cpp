@@ -1,12 +1,9 @@
 #include "pch.h"
 #include "CameraSystem.h"
 
-Mat4 CameraSystem::Update(Scene& scene, float aspectRatio, SceneConstants& outScene)
+// Caméra isMain de la scène, si elle existe
+static std::optional<CameraView> FindMainCamera(Scene& scene)
 {
-    Mat4 view = Identity();
-    Mat4 proj = Identity();
-    Vec3 camPos = { 0.f, 0.f, 0.f };
-
     for (auto& [id, cam] : scene.Cameras())
     {
         if (!cam.isMain) continue;
@@ -15,15 +12,24 @@ Mat4 CameraSystem::Update(Scene& scene, float aspectRatio, SceneConstants& outSc
 
         // Repère monde de la caméra (hiérarchie incluse) : ligne 1 = up, 2 = forward, 3 = position
         const Mat4& w = t->worldMatrix;
-        camPos = GetRow(w, 3);
-        view = LookToLH(camPos, GetRow(w, 2), GetRow(w, 1));
+        return CameraView{ GetRow(w, 3), GetRow(w, 2), GetRow(w, 1), cam.fovY, cam.nearPlane, cam.farPlane };
+    }
+    return std::nullopt;
+}
 
-        proj = PerspectiveFovLH(cam.fovY * kDegToRad, aspectRatio, cam.nearPlane, cam.farPlane);
+Mat4 CameraSystem::Update(Scene& scene, float aspectRatio, SceneConstants& outScene, const CameraView* view)
+{
+    Mat4 viewProj = Identity();
+    Vec3 camPos = { 0.f, 0.f, 0.f };
 
-        break;
+    const std::optional<CameraView> cam = view ? std::optional<CameraView>(*view) : FindMainCamera(scene);
+    if (cam)
+    {
+        camPos = cam->position;
+        viewProj = LookToLH(cam->position, cam->forward, cam->up)
+                 * PerspectiveFovLH(cam->fovY * kDegToRad, aspectRatio, cam->nearPlane, cam->farPlane);
     }
 
-    const Mat4 viewProj = view * proj;
     outScene.viewProj = Transpose(viewProj);
     outScene.cameraPos = camPos;
     return viewProj;

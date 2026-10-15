@@ -1,5 +1,17 @@
 #pragma once
 
+// -------------------------------------------------------
+// Mesh procédural : nom + paramètres de génération (sérialisés)
+// -------------------------------------------------------
+enum class MeshPrimitive : uint8_t { Box };
+
+struct MeshDesc
+{
+    std::string   name;
+    MeshPrimitive primitive = MeshPrimitive::Box;
+    float         size = 1.f;
+};
+
 struct GpuMesh
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer; // VB puis IB dans la même ressource
@@ -10,7 +22,7 @@ struct GpuMesh
     uint32_t                               indexCount = 0;
     uint32_t                               sizeInBytes = 0;
     uint64_t                               uploadFenceValue = 0;
-    std::string                            name;
+    MeshDesc                               desc;
     bool                                   uploaded = false;
 };
 
@@ -19,10 +31,9 @@ class CORIUM_API MeshRegistry
 public:
     MeshRegistry() = default;
 
-    // Retourne l'index du mesh, crée si inexistant.
+    // Retourne l'index du mesh, crée si inexistant (un nom déjà enregistré garde ses paramètres d'origine).
     // La copie GPU est différée : elle sera enregistrée par RecordPendingUploads.
-    uint32_t Register(const std::string& name, const BufferGeometry& geometry,
-        ID3D12Device* device);
+    uint32_t Register(const MeshDesc& desc, ID3D12Device* device);
 
     const GpuMesh* Get(uint32_t index) const;
     bool           IsValid(uint32_t index) const;

@@ -1,10 +1,26 @@
 #include "pch.h"
 #include "Scene.h"
 
-Entity Scene::CreateEntity(const std::string& name)
+static EntityUUID GenerateUUID()
+{
+    // Graine de 128 bits : avec 32 bits seulement, deux sessions pourraient produire la même suite
+    static std::mt19937_64 rng = []
+    {
+        std::random_device rd;
+        std::seed_seq seed{ rd(), rd(), rd(), rd() };
+        return std::mt19937_64(seed);
+    }();
+
+    EntityUUID uuid;
+    do uuid = rng(); while (uuid == NULL_UUID);
+    return uuid;
+}
+
+Entity Scene::CreateEntity(const std::string& name, EntityUUID uuid)
 {
     Entity e;
     e.id = m_nextId++;
+    e.uuid = uuid != NULL_UUID ? uuid : GenerateUUID();
     e.name = name;
     m_entities[e.id] = e;
 
