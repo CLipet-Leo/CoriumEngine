@@ -13,7 +13,7 @@ vitesse d'arrivée du multiplateforme.
 - `static_assert` de layout sur `ShaderTypes.h`. `Types.h` supprimé.
 - Conservés volontairement : `gWorld`, `gViewProj`, `gCameraPos` (inutilisés par le shader
   actuel, nécessaires à l'éclairage ; les retirer casserait le layout partagé avec le CPU).
-- Reste pour la spec 3 : masquer DirectX à l'exe (PCH public/privé).
+- Reste pour la spec 3 : masquer DirectX à l'exe (PCH public/privé) — repris dans ses prérequis.
 
 ## 2. Prérequis de l'éditeur — terminé
 Ordre : `dt` → input + caméra éditeur → sérialisation (la caméra aide à vérifier les scènes
@@ -39,7 +39,8 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
 - Delta souris relatif via Raw Input (`WM_INPUT`).
 - Le filtrage est décidé par l'application : en spec 2 via `io.WantCaptureMouse/Keyboard`
   (à exposer depuis la DLL — le retour de `HandleWindowMessage` ne suffit pas, ImGui ne
-  « consomme » quasiment jamais un message) ; en spec 3 via « panneau Viewport survolé/focus ».
+  « consomme » quasiment jamais un message) ; en spec 3 via « panneau Viewport survolé/focus »
+  (cf. spec 3, Viewport offscreen).
 
 ### Caméra éditeur
 - **Hors scène** : jamais sérialisée, ne touche pas la caméra `isMain` du jeu.
@@ -83,12 +84,57 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
   resauver, fichiers identiques octet pour octet.
 
 ## 3. Éditeur en projet séparé
-- Nouveau projet `CoriumEditor/` (exe) lié à RenderLib ; `CoriumEngine/` devient le runtime sans éditeur.
-- `EditorUI` sort de la DLL ; `HandleWindowMessage` sort de `IRenderer`.
+- Nouveau projet `CoriumEditor/` (exe) lié à RenderLib ; `CoriumEngine/` devient le runtime sans
+  éditeur ni ImGui (`Render(scene, nullptr)`, caméra `isMain`, rendu direct dans la swapchain).
+  `EditorCamera` part dans `CoriumEditor/`.
+- `EditorUI` sort de la DLL (ne dépend que de `Scene`, déjà exportée) ; les stats (index de frame,
+  nom de l'adaptateur) passent par une petite API (ex. `IRenderer::GetStats()`).
 - Rendu de la scène dans une cible offscreen, exposée en `ImTextureID` pour un panneau Viewport docké.
-- Point à trancher dès le départ : partage du contexte ImGui entre DLL et exe
-  (contexte exporté + `ImGui::SetCurrentContext`, ou ImGui compilé en DLL).
-- Le backend ImGui reste dans le renderer (DX12) ; l'éditeur ne manipule que des widgets.
+
+### Prérequis (dans l'ordre)
+1. Réparer la config `Release` de RenderLib (ne compile pas : `pch.h` introuvable ; manquent
+   `RENDERER_EXPORTS` — `RENDERLIB_EXPORTS` défini à la place —, `USE_DX12`, dossiers d'include,
+   `imgui.lib`, `stdcpp20`). Supprimer la config `Debug` orpheline. À faire avant de cloner un
+   `.vcxproj`.
+2. Masquer DirectX aux exe (reste de la spec 1) : PCH public/privé, l'exe n'inclut plus les
+   headers DX12 ni `EditorUI.h` via `Core.h`.
+3. Fenêtre Win32 + boucle déplacées dans `RenderLib/Core/Platform` (à côté de `Clock`/`Input`)
+   plutôt que dupliquées entre les deux exe.
+
+### Contexte ImGui (tranché)
+- ImGui vcpkg est une **lib statique** (pas de DLL) : chaque module a sa copie de `GImGui`.
+  ImGui en DLL écarté (impose de sortir ImGui de vcpkg).
+- Le contexte est créé par la DLL et exporté ; l'exe fait `ImGui::SetCurrentContext` +
+  `SetAllocatorFunctions`, et `IMGUI_CHECKVERSION()` comme garde-fou (même manifeste vcpkg →
+  même version et même `imconfig`).
+- Backends séparés selon leur nature : **Win32** (plateforme) dans l'éditeur, qui possède la
+  fenêtre et le WndProc — d'où la sortie de `HandleWindowMessage` d'`IRenderer` ; **DX12** reste
+  dans le renderer. Le multi-viewport passe par les callbacks `PlatformIO` du contexte partagé.
+- Init ImGui optionnelle côté renderer (ex. `InitUI()`), appelée seulement par l'éditeur.
+- `ImTextureID` = `ImU64` (ImGui ≥ 1.91.4) : `D3D12_GPU_DESCRIPTOR_HANDLE.ptr` sans type DX12 exposé.
+
+### Pilotage de la frame
+- `Render` ne peut plus appeler l'UI lui-même. Déroulé :
+  `BeginUIFrame()` (NewFrame) → `editor.Draw(...)` (widgets, dont `Image(viewportTex)`) →
+  `Render(scene, &view)` (scène → offscreen, barrière RT → SRV, ImGui → swapchain, Present).
+
+### Viewport offscreen
+- Aspect calculé depuis la taille de la cible (le panneau), plus depuis la swapchain.
+- Format identique à la swapchain (`R8G8B8A8_UNORM`), sinon ajouter le format à la clé de PSO.
+- Taille connue pendant `Draw` : redimensionnement appliqué en début de `Render`, avec
+  `FlushGpu` (pas de destruction de texture ni réécriture de slot SRV en vol). Slot SRV dédié
+  (slot 0 = police ImGui).
+- Filtrage de l'input (cf. spec 2) : `WantCaptureMouse` est toujours vrai au-dessus du Viewport
+  (c'est une fenêtre ImGui) → la caméra éditeur se base sur `IsWindowHovered/Focused` du panneau.
+
+### Build
+- `CopyFileToFolders` (shaders, `Assets/`) aussi pour `CoriumEditor`. Sortie partagée
+  `Build/<Config>/` (un seul `imgui.ini`, sans conflit tant que le runtime n'a pas d'UI).
+
+### Critère de fin
+- `CoriumEngine.exe` ne lie plus ImGui ; l'éditeur affiche le Viewport docké et redimensionnable ;
+  la caméra ne réagit qu'au survol du Viewport ; layout persistant ; aucune erreur de la couche
+  de debug DX12 pendant un redimensionnement.
 
 ## 4. Abstraction RHI + backend Vulkan
 - Conçue d'après les besoins réels du renderer et de l'éditeur (cibles offscreen, textures UI).
