@@ -92,10 +92,8 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
 - Rendu de la scène dans une cible offscreen, exposée en `ImTextureID` pour un panneau Viewport docké.
 
 ### Prérequis (dans l'ordre)
-1. Réparer la config `Release` de RenderLib (ne compile pas : `pch.h` introuvable ; manquent
-   `RENDERER_EXPORTS` — `RENDERLIB_EXPORTS` défini à la place —, `USE_DX12`, dossiers d'include,
-   `imgui.lib`, `stdcpp20`). Supprimer la config `Debug` orpheline. À faire avant de cloner un
-   `.vcxproj`.
+1. ~~Réparer la config `Release`~~ (fait : alignée sur `Debug_DX12`). Reste : supprimer la config
+   `Debug` orpheline avant de cloner un `.vcxproj`.
 2. Masquer DirectX aux exe (reste de la spec 1) : PCH public/privé, l'exe n'inclut plus les
    headers DX12 ni `EditorUI.h` via `Core.h`.
 3. Fenêtre Win32 + boucle déplacées dans `RenderLib/Core/Platform` (à côté de `Clock`/`Input`)
