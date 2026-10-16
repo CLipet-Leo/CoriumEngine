@@ -119,6 +119,9 @@
     <ClInclude Include="Core\include\Core.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Core\include\CorePublic.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
     <ClInclude Include="Core\DX12\DX12Renderer.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>

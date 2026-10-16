@@ -24,7 +24,8 @@ relativement au dossier courant.
 ## Conventions
 
 - **Aucun `#include` dans les `.h`.** Tout passe par les PCH : `pch.h` / `Core/include/Core.h`
-  (RenderLib) et `stdafx.h` (exe, qui inclut Core.h). Nouveau header → l'ajouter dans Core.h.
+  (RenderLib) et `stdafx.h` (exe, qui n'inclut que `CorePublic.h`). Nouveau header → dans
+  `CorePublic.h` s'il est utile aux exe et sans type DirectX/ImGui, sinon dans `Core.h`.
 - Spécialisations explicites de templates utilisées hors de la DLL : `inline` dans le header
   (sinon non exportées → LNK2019).
 - Erreurs DX12 : `EVAL_HR(hr, msg)` (lève `DX12Exception`).

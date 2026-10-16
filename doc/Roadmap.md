@@ -13,7 +13,7 @@ vitesse d'arrivée du multiplateforme.
 - `static_assert` de layout sur `ShaderTypes.h`. `Types.h` supprimé.
 - Conservés volontairement : `gWorld`, `gViewProj`, `gCameraPos` (inutilisés par le shader
   actuel, nécessaires à l'éclairage ; les retirer casserait le layout partagé avec le CPU).
-- Reste pour la spec 3 : masquer DirectX à l'exe (PCH public/privé) — repris dans ses prérequis.
+- DirectX masqué à l'exe (PCH public/privé) : fait en prérequis de la spec 3.
 
 ## 2. Prérequis de l'éditeur — terminé
 Ordre : `dt` → input + caméra éditeur → sérialisation (la caméra aide à vérifier les scènes
@@ -94,8 +94,8 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
 ### Prérequis (dans l'ordre)
 1. ~~Réparer la config `Release`~~ (fait : alignée sur `Debug_DX12`). Reste : supprimer la config
    `Debug` orpheline avant de cloner un `.vcxproj`.
-2. Masquer DirectX aux exe (reste de la spec 1) : PCH public/privé, l'exe n'inclut plus les
-   headers DX12 ni `EditorUI.h` via `Core.h`.
+2. ~~Masquer DirectX aux exe~~ (fait : `stdafx.h` n'inclut que `CorePublic.h` ; `CameraView`
+   déplacé dans `Renderer.h`). Le header `Core.h` reste le PCH interne de la DLL.
 3. Fenêtre Win32 + boucle déplacées dans `RenderLib/Core/Platform` (à côté de `Clock`/`Input`)
    plutôt que dupliquées entre les deux exe.
 

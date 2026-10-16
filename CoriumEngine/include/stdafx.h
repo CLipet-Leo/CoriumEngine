@@ -9,8 +9,7 @@
 #include "Resource.h"
 #include "framework.h"
 
-#include "RenderLib.h"
 #include "CoreDefinition.h"
-#include "Core.h"
+#include "CorePublic.h"
 
 #include "../public/EditorCamera.h"

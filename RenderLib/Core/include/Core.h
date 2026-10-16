@@ -1,26 +1,17 @@
 #pragma once
 
-#include "Helper.h"
-#include "../../Math/Math.h"
+#include "CorePublic.h"
 #include "ShaderTypes.h"
-#include "../Platform/Clock.h"
-#include "../Platform/Input.h"
-#include "../public/Renderer.h"
 
 // Géométrie
 #include "../Geometry/BufferGeometry.h"
 #include "../Geometry/BoxGeometry.h"
 
-// Scène (ordre de dépendance)
-#include "../../Scene/Entity.h"
-#include "../../Scene/Components.h"
-#include "../../Scene/Scene.h"
+// Ressources GPU
 #include "../../Scene/MeshRegistry.h"
 #include "../../Scene/MaterialRegistry.h"
-#include "../../Scene/SceneSerializer.h"
 
 // Systèmes
-#include "../../Scene/Systems/TransformSystem.h"
 #include "../../Scene/Systems/CameraSystem.h"
 #include "../../Scene/Systems/LightSystem.h"
 #include "../../Scene/Systems/RenderSystem.h"

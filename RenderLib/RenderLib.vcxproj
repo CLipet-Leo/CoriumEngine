@@ -171,6 +171,7 @@
     <ClInclude Include="Core\DX12\DX12MemoryManager.h" />
     <ClInclude Include="Core\DX12\DX12PSOCache.h" />
     <ClInclude Include="Core\include\Core.h" />
+    <ClInclude Include="Core\include\CorePublic.h" />
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="Core\include\CoreDefinition.h" />
     <ClInclude Include="Core\include\framework.h" />
