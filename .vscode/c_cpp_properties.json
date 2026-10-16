@@ -8,13 +8,14 @@
             "cppStandard": "c++20",
             "cStandard": "c17",
             "includePath": [
-                "${workspaceFolder}/RenderLib/Core/include",
-                "${workspaceFolder}/CoriumEngine/include",
-                "${workspaceFolder}/CoriumEngine",
+                "${workspaceFolder}/CoriumEngine/Core/include",
+                "${workspaceFolder}/CoriumRuntime/include",
+                "${workspaceFolder}/CoriumEditor/include",
+                "${workspaceFolder}/CoriumEditor",
                 "${workspaceFolder}/vcpkg_installed/x64-windows/include"
             ],
             "forcedInclude": [
-                "${workspaceFolder}/RenderLib/Core/include/pch.h"
+                "${workspaceFolder}/CoriumEngine/Core/include/pch.h"
             ],
             "defines": [
                 "_DEBUG",

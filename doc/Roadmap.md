@@ -5,7 +5,7 @@ Objectif du projet : exercice d'architecture et de contraintes d'un projet de gr
 vitesse d'arrivée du multiplateforme.
 
 ## 1. Librairie de maths — terminé
-- `RenderLib/Math/Math.h` : `Vec2/3/4`, `Mat4`, `Quat` POD, header-only, conformes à
+- `CoriumEngine/Math/Math.h` : `Vec2/3/4`, `Mat4`, `Quat` POD, header-only, conformes à
   `Conventions.md`. Plus aucun DirectXMath dans le moteur hors `MathSelfCheck.cpp` (référence
   du self-check, lancé en Debug à l'init du renderer).
 - Rotation du `TransformComponent` en quaternion (`SetRotationDeg` pour l'Euler), cache Euler
@@ -19,13 +19,13 @@ vitesse d'arrivée du multiplateforme.
 Ordre : `dt` → input + caméra éditeur → sérialisation (la caméra aide à vérifier les scènes
 chargées).
 
-Fait : `Clock` et `Input` (`RenderLib/Core/Platform`), `EditorCamera` (exe),
+Fait : `Clock` et `Input` (`CoriumEngine/Core/Platform`), `EditorCamera` (exe),
 `Render(scene, const CameraView*)`, `IRenderer::WantCaptureMouse`, UUID d'entité,
 `SceneSerializer` + `doc/SceneFormat.md`, `Assets/Scenes/Demo.scene` (remplace `LoadDemoScene`),
 self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `Save` existe).
 
 ### `Update(dt)`
-- Classe `Clock` dans RenderLib (`std::chrono::steady_clock`) : `Tick()` une fois par frame,
+- Classe `Clock` dans la DLL (`std::chrono::steady_clock`) : `Tick()` une fois par frame,
   puis `DeltaTime()` (borné, ex. 0,1 s, contre les pics : breakpoint, déplacement de fenêtre)
   et `TotalTime()`. Une instance possédée par `Win32Application`, ticquée en début de frame
   dans `Run` ; pas de singleton.
@@ -34,7 +34,7 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
 - Hors périmètre : pas de temps fixe (à ajouter avec la physique).
 
 ### Input
-- État brut dans RenderLib (touches, boutons, delta souris), alimenté par le WndProc de l'exe,
+- État brut dans la DLL (touches, boutons, delta souris), alimenté par le WndProc de l'exe,
   **sans dépendance à ImGui**. Remis à zéro sur `WM_KILLFOCUS`.
 - Delta souris relatif via Raw Input (`WM_INPUT`).
 - Le filtrage est décidé par l'application : en spec 2 via `io.WantCaptureMouse/Keyboard`
@@ -52,7 +52,7 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
 - Format texte maison, **sous-ensemble strict de YAML** documenté dans `doc/SceneFormat.md` :
   indentation 2 espaces, `clé: valeur` en bloc, listes `-`, commentaires `#`, vecteurs en
   `[x, y, z]` ; pas d'ancres ni de style flow général. `version: 1` en tête.
-- Code dans `RenderLib/Scene` (runtime et éditeur). `Load(path, scene, renderer)` : le
+- Code dans `CoriumEngine/Scene` (runtime et éditeur). `Load(path, scene, renderer)` : le
   renderer résout les noms en index. Chargement dans une `Scene` neuve.
 - Contenu du fichier :
   - `meshes:` primitives procédurales nommées (`cube` → `primitive: box`, `size: 1`), enregistrées
@@ -83,8 +83,17 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
 - **Critère de fin** : self-check Debug (comme `MathSelfCheck`) charger → sauver → recharger →
   resauver, fichiers identiques octet pour octet.
 
-## 3. Éditeur en projet séparé
-- Nouveau projet `CoriumEditor/` (exe) lié à RenderLib ; `CoriumEngine/` devient le runtime sans
+## 3. Éditeur en projet séparé — terminé
+Fait : `CoriumEditor/` (exe), runtime `CoriumRuntime/` sans ImGui, `EditorUI`/`EditorCamera` dans
+l'éditeur, contexte ImGui possédé par l'éditeur (cf. ci-dessous), Viewport offscreen docké et
+redimensionnable, layout par défaut (DockBuilder) puis persistant. Vérifié Debug (couche de debug
++ GBV, arrêt sur erreur) : redimensionnements, Viewport détaché en fenêtre OS, caméra au survol.
+Écart au plan : le contexte est créé par l'éditeur, pas par la DLL — l'ordre d'arrêt imposé par
+le multi-viewport (DX12 avant Win32, contexte en dernier) devient un simple ordre inverse.
+Reste : synchro entre la queue principale et celles des fenêtres détachées (un Viewport détaché
+peut lire la cible pendant son écriture, déchirure possible) ; commande « Sauver ».
+
+- Nouveau projet `CoriumEditor/` (exe) lié à la DLL ; l'exe actuel devient le runtime sans
   éditeur ni ImGui (`Render(scene, nullptr)`, caméra `isMain`, rendu direct dans la swapchain).
   `EditorCamera` part dans `CoriumEditor/`.
 - `EditorUI` sort de la DLL (ne dépend que de `Scene`, déjà exportée) ; les stats (index de frame,
@@ -92,25 +101,24 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
 - Rendu de la scène dans une cible offscreen, exposée en `ImTextureID` pour un panneau Viewport docké.
 
 ### Prérequis (dans l'ordre)
-1. ~~Réparer la config `Release`~~ (fait : alignée sur `Debug_DX12`). Reste : supprimer la config
-   `Debug` orpheline avant de cloner un `.vcxproj`.
+1. ~~Réparer la config `Release`~~ (fait : alignée sur `Debug_DX12` ; config `Debug` orpheline
+   supprimée).
 2. ~~Masquer DirectX aux exe~~ (fait : `stdafx.h` n'inclut que `CorePublic.h` ; `CameraView`
    déplacé dans `Renderer.h`). Le header `Core.h` reste le PCH interne de la DLL.
-3. ~~Fenêtre Win32 + boucle déplacées dans `RenderLib/Core/Platform`~~ (fait : `Win32Application`
+3. ~~Fenêtre Win32 + boucle déplacées dans `CoriumEngine/Core/Platform`~~ (fait : `Win32Application`
    exportée, l'exe dérive et surcharge `Update(dt)`/`GetView()` ; titre et icône passés par l'exe).
-   Reste pour le backend ImGui Win32 dans l'éditeur : un hook de message virtuel remplaçant
-   `IRenderer::HandleWindowMessage`.
+   Hook de message : `Win32Application::OnWindowMessage` (remplace `IRenderer::HandleWindowMessage`).
 
 ### Contexte ImGui (tranché)
 - ImGui vcpkg est une **lib statique** (pas de DLL) : chaque module a sa copie de `GImGui`.
   ImGui en DLL écarté (impose de sortir ImGui de vcpkg).
-- Le contexte est créé par la DLL et exporté ; l'exe fait `ImGui::SetCurrentContext` +
-  `SetAllocatorFunctions`, et `IMGUI_CHECKVERSION()` comme garde-fou (même manifeste vcpkg →
-  même version et même `imconfig`).
+- Le contexte est créé par l'éditeur (révisé, cf. ci-dessus) ; `InitUI` fait côté DLL
+  `SetAllocatorFunctions` (allocateurs de l'exe) + `SetCurrentContext`, et `IMGUI_CHECKVERSION()`
+  comme garde-fou (même manifeste vcpkg → même version et même `imconfig`).
 - Backends séparés selon leur nature : **Win32** (plateforme) dans l'éditeur, qui possède la
   fenêtre et le WndProc — d'où la sortie de `HandleWindowMessage` d'`IRenderer` ; **DX12** reste
   dans le renderer. Le multi-viewport passe par les callbacks `PlatformIO` du contexte partagé.
-- Init ImGui optionnelle côté renderer (ex. `InitUI()`), appelée seulement par l'éditeur.
+- Init ImGui optionnelle côté renderer (`InitUI`/`ShutdownUI`), appelée seulement par l'éditeur.
 - `ImTextureID` = `ImU64` (ImGui ≥ 1.91.4) : `D3D12_GPU_DESCRIPTOR_HANDLE.ptr` sans type DX12 exposé.
 
 ### Pilotage de la frame
@@ -132,7 +140,7 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
   `Build/<Config>/` (un seul `imgui.ini`, sans conflit tant que le runtime n'a pas d'UI).
 
 ### Critère de fin
-- `CoriumEngine.exe` ne lie plus ImGui ; l'éditeur affiche le Viewport docké et redimensionnable ;
+- `CoriumRuntime.exe` ne lie pas ImGui ; l'éditeur affiche le Viewport docké et redimensionnable ;
   la caméra ne réagit qu'au survol du Viewport ; layout persistant ; aucune erreur de la couche
   de debug DX12 pendant un redimensionnement.
 

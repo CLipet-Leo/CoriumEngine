@@ -2,19 +2,36 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "CoriumEngine (Debug_DX12)",
+            "name": "CoriumEditor (Debug_DX12)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Build/Debug_DX12/CoriumEngine.exe",
+            "program": "${workspaceFolder}/Build/Debug_DX12/CoriumEditor.exe",
             "cwd": "${workspaceFolder}/Build/Debug_DX12",
             "preLaunchTask": "Build Debug_DX12",
             "console": "internalConsole"
         },
         {
-            "name": "CoriumEngine (Debug_DX12, sans build)",
+            "name": "CoriumEditor (Debug_DX12, sans build)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Build/Debug_DX12/CoriumEngine.exe",
+            "program": "${workspaceFolder}/Build/Debug_DX12/CoriumEditor.exe",
+            "cwd": "${workspaceFolder}/Build/Debug_DX12",
+            "console": "internalConsole"
+        },
+        {
+            "name": "CoriumRuntime (Debug_DX12)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Build/Debug_DX12/CoriumRuntime.exe",
+            "cwd": "${workspaceFolder}/Build/Debug_DX12",
+            "preLaunchTask": "Build Debug_DX12",
+            "console": "internalConsole"
+        },
+        {
+            "name": "CoriumRuntime (Debug_DX12, sans build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Build/Debug_DX12/CoriumRuntime.exe",
             "cwd": "${workspaceFolder}/Build/Debug_DX12",
             "console": "internalConsole"
         }

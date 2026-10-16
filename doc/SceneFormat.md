@@ -1,7 +1,7 @@
 # Format de scène — CoriumEngine
 
 Fichiers `.scene` dans `Assets/` (versionné, copié à côté de l'exe au build). Lus et écrits par
-`SceneSerializer` (`RenderLib/Scene`). Exemple de référence : `Assets/Scenes/Demo.scene`.
+`SceneSerializer` (`CoriumEngine/Scene`). Exemple de référence : `Assets/Scenes/Demo.scene`.
 
 ## Syntaxe : sous-ensemble strict de YAML
 Tout fichier valide est du YAML valide ; l'inverse est faux.

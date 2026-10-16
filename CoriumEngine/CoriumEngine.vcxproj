@@ -5,10 +5,6 @@
       <Configuration>Debug_DX12</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
@@ -17,25 +13,20 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{af70f21e-3174-4fd5-9b00-7edd7c4714ff}</ProjectGuid>
+    <ProjectGuid>{4c7fb8f5-8353-4a82-b69b-99786d69d68c}</ProjectGuid>
     <RootNamespace>CoriumEngine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>CoriumEngine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -46,9 +37,6 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -56,10 +44,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\Build\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\$(ProjectName)\Intermediate\$(Configuration)\</IntDir>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'">
     <OutDir>$(SolutionDir)\Build\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\$(ProjectName)\Intermediate\$(Configuration)\</IntDir>
@@ -71,37 +55,23 @@
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\include;$(SolutionDir)\RenderLib\include;$(SolutionDir)\RenderLib\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Build\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;USE_DX12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;RENDERER_EXPORTS;USE_DX12;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\CoriumEngine\include;$(SolutionDir)\RenderLib\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SolutionDir)\CoriumEngine\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Build\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RenderLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;imguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -110,46 +80,102 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;USE_DX12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;RENDERER_EXPORTS;USE_DX12;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\CoriumEngine\include;$(SolutionDir)\RenderLib\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SolutionDir)\CoriumEngine\Core\include;$(SolutionDir)\vcpkg_installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Build\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RenderLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;d3dcompiler.lib;imgui.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="public\EditorCamera.h" />
-    <ClInclude Include="include\framework.h" />
-    <ClInclude Include="include\Resource.h" />
-    <ClInclude Include="include\stdafx.h" />
-    <ClInclude Include="include\targetver.h" />
+    <ClCompile Include="Scene\SceneSerializer.cpp" />
+    <ClCompile Include="Core\Platform\Input.cpp" />
+    <ClCompile Include="Core\Platform\Win32Application.cpp" />
+    <ClCompile Include="Core\DX12\DX12Renderer.cpp" />
+    <ClCompile Include="Core\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_DX12|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Core\DX12\DXGIFactory.cpp" />
+    <ClCompile Include="Core\DX12\DXGIAdapter.cpp" />
+    <ClCompile Include="Core\DX12\DX12Debug.cpp" />
+    <ClCompile Include="Core\DX12\DX12Device.cpp" />
+    <ClCompile Include="Core\DX12\DX12CommandQueue.cpp" />
+    <ClCompile Include="Core\DX12\DX12CommandObjects.cpp" />
+    <ClCompile Include="Core\DX12\DX12Fence.cpp" />
+    <ClCompile Include="Core\DX12\DX12SwapChain.cpp" />
+    <ClCompile Include="Core\DX12\DX12DepthStencil.cpp" />
+    <ClCompile Include="Core\Geometry\BufferGeometry.cpp" />
+    <ClCompile Include="Core\Geometry\BoxGeometry.cpp" />
+    <ClCompile Include="Core\DX12\DX12DescriptorHeaps.cpp" />
+    <ClCompile Include="Core\DX12\DX12MemoryManager.cpp" />
+    <ClCompile Include="Core\DX12\DX12PSOCache.cpp" />
+    <ClCompile Include="Core\DX12\DX12ImGui.cpp" />
+    <ClCompile Include="Scene\MeshRegistry.cpp" />
+    <ClCompile Include="Scene\MaterialRegistry.cpp" />
+    <ClCompile Include="Scene\Systems\LightSystem.cpp" />
+    <ClCompile Include="Scene\Systems\RenderSystem.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\Systems\TransformSystem.cpp" />
+    <ClCompile Include="Scene\Systems\CameraSystem.cpp" />
+    <ClCompile Include="Core\DX12\DX12RenderTarget.cpp" />
+    <ClCompile Include="Math\MathSelfCheck.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EditorCamera.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClInclude Include="Scene\SceneSerializer.h" />
+    <ClInclude Include="Core\Platform\Input.h" />
+    <ClInclude Include="Core\Platform\Clock.h" />
+    <ClInclude Include="Core\Platform\Win32Application.h" />
+    <ClInclude Include="Core\DX12\DX12DescriptorHeaps.h" />
+    <ClInclude Include="Core\DX12\DX12MemoryManager.h" />
+    <ClInclude Include="Core\DX12\DX12PSOCache.h" />
+    <ClInclude Include="Core\include\Core.h" />
+    <ClInclude Include="Core\include\CorePublic.h" />
+    <ClInclude Include="Math\Math.h" />
+    <ClInclude Include="Core\include\CoreDefinition.h" />
+    <ClInclude Include="Core\include\framework.h" />
+    <ClInclude Include="Core\include\Helper.h" />
+    <ClInclude Include="Core\include\pch.h" />
+    <ClInclude Include="Core\include\DirectXHeaders.h" />
+    <ClInclude Include="Core\DX12\DX12Renderer.h" />
+    <ClInclude Include="Core\include\ShaderTypes.h" />
+    <ClInclude Include="Core\public\Renderer.h" />
+    <ClInclude Include="Core\DX12\DXGIFactory.h" />
+    <ClInclude Include="Core\DX12\DXGIAdapter.h" />
+    <ClInclude Include="Core\DX12\DX12Debug.h" />
+    <ClInclude Include="Core\DX12\DX12Device.h" />
+    <ClInclude Include="Core\DX12\DX12CommandQueue.h" />
+    <ClInclude Include="Core\DX12\DX12CommandObjects.h" />
+    <ClInclude Include="Core\DX12\DX12Fence.h" />
+    <ClInclude Include="Core\DX12\DX12SwapChain.h" />
+    <ClInclude Include="Core\DX12\DX12DepthStencil.h" />
+    <ClInclude Include="Core\Geometry\BufferGeometry.h" />
+    <ClInclude Include="Core\Geometry\BoxGeometry.h" />
+    <ClInclude Include="Core\DX12\DX12ImGui.h" />
+    <ClInclude Include="Scene\MeshRegistry.h" />
+    <ClInclude Include="Scene\MaterialRegistry.h" />
+    <ClInclude Include="Scene\Systems\LightSystem.h" />
+    <ClInclude Include="Scene\Systems\RenderSystem.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\Components.h" />
+    <ClInclude Include="Scene\Entity.h" />
+    <ClInclude Include="Scene\Systems\TransformSystem.h" />
+    <ClInclude Include="Scene\Systems\CameraSystem.h" />
+    <ClInclude Include="Core\DX12\DX12RenderTarget.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="ressources\CoriumEngine.ico" />
-    <Image Include="ressources\small.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="resources\CoriumEngine.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CoriumEngine.aps" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="..\Assets\**\*.*">
-      <DestinationFolders>$(OutDir)Assets\%(RecursiveDir)</DestinationFolders>
+    <CopyFileToFolders Include="Shaders\Basic.hlsl">
+      <DestinationFolders>$(OutDir)Shaders</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -1,0 +1,3 @@
+#include "../include/Resource.h"
+
+IDI_CORIUMEDITOR ICON "./CoriumEditor.ico"
