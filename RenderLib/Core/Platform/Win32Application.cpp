@@ -1,6 +1,5 @@
-#include "stdafx.h"
-#include "public/Win32Application.h"
-#include <iostream>
+#include "pch.h"
+#include "Win32Application.h"
 
 Win32Application::Win32Application()
 {
@@ -12,7 +11,7 @@ Win32Application::~Win32Application()
     Shutdown();
 }
 
-bool Win32Application::RegisterWindowClass(HINSTANCE hInstance)
+bool Win32Application::RegisterWindowClass(HINSTANCE hInstance, WORD iconId)
 {
     WNDCLASSEX wc = {};
     wc.cbSize = sizeof(WNDCLASSEX);
@@ -23,8 +22,12 @@ bool Win32Application::RegisterWindowClass(HINSTANCE hInstance)
 
     // Charger les icônes depuis les ressources de l'application.
     // Utiliser LR_SHARED évite de devoir appeler DestroyIcon.
-    wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_CORIUMENGINE), IMAGE_ICON, 32, 32, LR_SHARED | LR_DEFAULTCOLOR);
-    wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(IDI_CORIUMENGINE), IMAGE_ICON, 16, 16, LR_SHARED | LR_DEFAULTCOLOR);
+    // hInstance est le module de l'exe : c'est lui qui porte les ressources.
+    if (iconId)
+    {
+        wc.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(iconId), IMAGE_ICON, 32, 32, LR_SHARED | LR_DEFAULTCOLOR);
+        wc.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(iconId), IMAGE_ICON, 16, 16, LR_SHARED | LR_DEFAULTCOLOR);
+    }
 
     if (!RegisterClassEx(&wc))
     {
@@ -33,16 +36,13 @@ bool Win32Application::RegisterWindowClass(HINSTANCE hInstance)
     return true;
 }
 
-bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, uint32_t width, uint32_t height)
+bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, const wchar_t* title, WORD iconId, uint32_t width, uint32_t height)
 {
     m_hInstance = hInstance;
     m_width = width;
     m_height = height;
-	wchar_t titleBuffer[MAX_NAME_STRING] = {0};
-	LoadString(hInstance, IDS_APP_TITLE, titleBuffer, MAX_NAME_STRING);
-	LPCWSTR title = titleBuffer;
 
-    if (!RegisterWindowClass(hInstance))
+    if (!RegisterWindowClass(hInstance, iconId))
         return false;
 
     DWORD style = WS_OVERLAPPEDWINDOW;
@@ -96,13 +96,12 @@ void Win32Application::Run()
         else
         {
             m_clock.Tick();
-            m_editorCamera.Update(m_clock.DeltaTime(), m_input, m_renderer->WantCaptureMouse());
+            Update(m_clock.DeltaTime());
             m_input.EndFrame();
 
             // Logique de scène, puis rendu
             m_transformSystem.Update(m_scene);
-            const CameraView view = m_editorCamera.GetView();
-            m_renderer->Render(m_scene, &view);
+            m_renderer->Render(m_scene, GetView());
         }
     }
 }

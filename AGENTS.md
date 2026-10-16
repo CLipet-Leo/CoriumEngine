@@ -8,7 +8,8 @@ Tenir ce fichier à jour plutôt que des mémoires propres à un outil.
 Moteur 3D C++ / DirectX 12, Windows x64 uniquement.
 
 - `RenderLib/` : DLL du moteur. Export via `CORIUM_API` (`RENDERER_EXPORTS` défini dans la DLL).
-- `CoriumEngine/` : exe Win32 (boucle, fenêtre, scène de démo dans `Main.cpp`).
+- `CoriumEngine/` : exe Win32 (`EngineApplication` dérivée de `Win32Application`, caméra éditeur,
+  scène de démo dans `Main.cpp`).
 
 ## Build
 
@@ -31,7 +32,8 @@ relativement au dossier courant.
 - Erreurs DX12 : `EVAL_HR(hr, msg)` (lève `DX12Exception`).
 - Nouveaux fichiers source : les ajouter au `.vcxproj` **et** au `.vcxproj.filters`.
 - Fins de ligne : voir `.gitattributes` (.h/.cpp en LF, .sln/.vcxproj en CRLF).
-  `Win32Application.h/.cpp` sont encodés cp1252 : ne pas les réécrire en UTF-8.
+  `Win32Application.h/.cpp` (`RenderLib/Core/Platform`) sont encodés cp1252 : ne pas les réécrire
+  en UTF-8.
 - Commentaires de code en français.
 - Repère, matrices, angles, profondeur, layout GPU : voir `doc/Conventions.md` (à respecter et à
   tenir à jour).
@@ -39,9 +41,10 @@ relativement au dossier courant.
 ## Architecture
 
 - API publique : `IRenderer` (`RenderLib/Core/public/Renderer.h`), créé par `CreateRenderer()`.
-- La `Scene` (ECS, `RenderLib/Scene`) appartient à l'application. Boucle (`Win32Application::Run`) :
-  `Clock::Tick` → `EditorCamera::Update(dt, input)` → `Input::EndFrame` →
-  `TransformSystem::Update(scene)` → `IRenderer::Render(scene, &editorView)`.
+- Fenêtre + boucle partagées dans la DLL (`RenderLib/Core/Platform/Win32Application`), qui possède
+  renderer, `Scene` (ECS, `RenderLib/Scene`), `Clock` et `Input`. Chaque exe dérive et surcharge
+  `Update(dt)` et `GetView()`. Boucle (`Run`) : `Clock::Tick` → `Update(dt)` → `Input::EndFrame` →
+  `TransformSystem::Update(scene)` → `IRenderer::Render(scene, GetView())`.
 - `Input` (état brut, Raw Input) est alimenté par le WndProc de l'exe, sans dépendance à ImGui ;
   le filtrage UI passe par `IRenderer::WantCaptureMouse`.
 - Entités : `EntityID` runtime (clé des `ComponentMap`, jamais écrit) + `uuid` 64 bits persistant.

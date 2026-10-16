@@ -1,9 +1,25 @@
 #include "stdafx.h"
-#include "public/Win32Application.h"
 // Memory leak detection
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
+
+// Caméra éditeur hors scène (cf. EditorCamera)
+class EngineApplication : public Win32Application
+{
+protected:
+    void Update(float dt) override
+    {
+        m_editorCamera.Update(dt, GetInput(), GetRenderer().WantCaptureMouse());
+        m_view = m_editorCamera.GetView();
+    }
+
+    const CameraView* GetView() override { return &m_view; }
+
+private:
+    EditorCamera m_editorCamera;
+    CameraView   m_view;
+};
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pCmdLine*/, int nCmdShow)
 {
@@ -12,9 +28,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pC
 
     // Scope : app (et sa Scene) doit être détruite avant le dump des fuites
     {
-        Win32Application app;
+        EngineApplication app;
 
-        if (!app.Initialize(hInstance, nCmdShow, initialWidth, initialHeight))
+        wchar_t title[MAX_NAME_STRING] = {};
+        LoadString(hInstance, IDS_APP_TITLE, title, MAX_NAME_STRING);
+        if (!app.Initialize(hInstance, nCmdShow, title, IDI_CORIUMENGINE, initialWidth, initialHeight))
             return -1;
 
         // Assets\ est copié à côté de l'exécutable au build

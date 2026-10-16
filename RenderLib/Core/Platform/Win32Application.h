@@ -1,13 +1,15 @@
 #pragma once
 
-class Win32Application
+// Fenêtre Win32 + boucle, partagées par les exe. Chaque exe dérive et fournit sa logique
+// par Update (avant Input::EndFrame) et sa caméra par GetView.
+class CORIUM_API Win32Application
 {
 public:
     Win32Application();
-    ~Win32Application();
+    virtual ~Win32Application();
 
-    // Initialise la fenêtre et le renderer
-    bool Initialize(HINSTANCE hInstance, int nCmdShow, uint32_t width, uint32_t height);
+    // Initialise la fenêtre et le renderer ; iconId : ressource de l'exe (0 = icône par défaut)
+    bool Initialize(HINSTANCE hInstance, int nCmdShow, const wchar_t* title, WORD iconId, uint32_t width, uint32_t height);
 
     // Boucle principale
     void Run();
@@ -24,13 +26,20 @@ public:
     uint32_t GetClientHeight() const { return m_height; }
     IRenderer& GetRenderer() { return *m_renderer; }
     Scene&     GetScene() { return m_scene; }
+    const Input& GetInput() const { return m_input; }
+
+protected:
+    // Logique applicative de la frame, avant la mise à jour des transforms
+    virtual void Update(float /*dt*/) {}
+    // Vue hors scène ; nullptr = caméra isMain de la scène
+    virtual const CameraView* GetView() { return nullptr; }
 
 private:
     // Fonction statique pour rediriger vers l’instance (via userdata)
     static LRESULT CALLBACK WndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     // Création / enregistrement de la classe de fenêtre
-    bool RegisterWindowClass(HINSTANCE hInstance);
+    bool RegisterWindowClass(HINSTANCE hInstance, WORD iconId);
 
     HWND        m_hWnd = nullptr;
     uint32_t    m_width = 0;
@@ -43,7 +52,6 @@ private:
 
     Clock        m_clock;
     Input        m_input;
-    EditorCamera m_editorCamera;
 
     // Nom de la classe de fenêtre
     static constexpr const wchar_t* s_windowClassName = L"Win32AppWindowClass";

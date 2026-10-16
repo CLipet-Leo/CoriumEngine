@@ -14,3 +14,6 @@
 #include "../../Scene/Scene.h"
 #include "../../Scene/SceneSerializer.h"
 #include "../../Scene/Systems/TransformSystem.h"
+
+// Fenêtre + boucle (après Scene, Clock, Input)
+#include "../Platform/Win32Application.h"

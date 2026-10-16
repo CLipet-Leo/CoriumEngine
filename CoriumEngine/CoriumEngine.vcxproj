@@ -129,12 +129,10 @@
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="include\targetver.h" />
-    <ClInclude Include="public\Win32Application.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Win32Application.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="ressources\CoriumEngine.ico" />

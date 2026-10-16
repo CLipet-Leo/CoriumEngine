@@ -96,8 +96,10 @@ self-check Debug passé. Pas encore de commande « Sauver » dans l'UI (l'API `S
    `Debug` orpheline avant de cloner un `.vcxproj`.
 2. ~~Masquer DirectX aux exe~~ (fait : `stdafx.h` n'inclut que `CorePublic.h` ; `CameraView`
    déplacé dans `Renderer.h`). Le header `Core.h` reste le PCH interne de la DLL.
-3. Fenêtre Win32 + boucle déplacées dans `RenderLib/Core/Platform` (à côté de `Clock`/`Input`)
-   plutôt que dupliquées entre les deux exe.
+3. ~~Fenêtre Win32 + boucle déplacées dans `RenderLib/Core/Platform`~~ (fait : `Win32Application`
+   exportée, l'exe dérive et surcharge `Update(dt)`/`GetView()` ; titre et icône passés par l'exe).
+   Reste pour le backend ImGui Win32 dans l'éditeur : un hook de message virtuel remplaçant
+   `IRenderer::HandleWindowMessage`.
 
 ### Contexte ImGui (tranché)
 - ImGui vcpkg est une **lib statique** (pas de DLL) : chaque module a sa copie de `GImGui`.
