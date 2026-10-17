@@ -96,12 +96,18 @@
     <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="include\targetver.h" />
     <ClInclude Include="public\EditorCamera.h" />
+    <ClInclude Include="public\ComponentPanels.h" />
     <ClInclude Include="public\EditorUI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EditorCamera.cpp" />
     <ClCompile Include="EditorUI.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Inspector\ComponentBase.cpp" />
+    <ClCompile Include="Inspector\TransformPanel.cpp" />
+    <ClCompile Include="Inspector\MeshPanel.cpp" />
+    <ClCompile Include="Inspector\CameraPanel.cpp" />
+    <ClCompile Include="Inspector\LightPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\CoriumEditor.ico" />

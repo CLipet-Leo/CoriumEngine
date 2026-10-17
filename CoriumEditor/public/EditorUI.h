@@ -3,6 +3,11 @@
 class EditorUI
 {
 public:
+    EditorUI();
+
+    // Thème de l'éditeur, après ImGui::CreateContext
+    static void ApplyStyle();
+
     // Entre ImGui::NewFrame et IRenderer::Render (qui termine la frame ImGui)
     void Draw(Scene& scene, const RendererStats& stats, ImTextureID sceneTexture);
 
@@ -26,9 +31,10 @@ private:
     uint32_t m_viewportWidth = 0;
     uint32_t m_viewportHeight = 0;
 
-    // Euler affichés dans l'inspecteur, recalculés seulement si la rotation change ailleurs
-    // (évite l'instabilité d'une reconversion quat -> Euler à chaque frame)
-    EntityID m_eulerEntity = NULL_ENTITY;
-    Quat     m_eulerSource = {};
-    Vec3     m_euler = {};
+    // FPS affichés, rafraîchis périodiquement (cf. DrawStats)
+    double   m_statsTime = -1.0;
+    float    m_statsFps = 0.f;
+
+    // Sections de l'inspecteur, une par type de composant
+    std::vector<std::unique_ptr<ComponentBase>> m_components;
 };

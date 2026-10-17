@@ -229,7 +229,7 @@ void DX12Renderer::RefreshMaterial(uint32_t index)
 
 RendererStats DX12Renderer::GetStats() const
 {
-	return { m_frameIndex, m_adapterName.c_str() };
+	return { m_adapterName.c_str() };
 }
 
 void DX12Renderer::InitUI(ImGuiContext* context, void* (*allocFunc)(size_t, void*),

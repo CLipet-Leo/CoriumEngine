@@ -18,4 +18,5 @@
 #include <imgui_impl_win32.h>
 
 #include "../public/EditorCamera.h"
+#include "../public/ComponentPanels.h"
 #include "../public/EditorUI.h"

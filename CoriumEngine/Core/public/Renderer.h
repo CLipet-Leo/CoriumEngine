@@ -8,7 +8,6 @@ struct ImGuiContext;
 // Infos de debug affichées par l'éditeur
 struct RendererStats
 {
-    uint32_t       frameIndex = 0;
     const wchar_t* adapterName = L"";
 };
 

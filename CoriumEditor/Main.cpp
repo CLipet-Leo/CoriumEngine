@@ -31,14 +31,13 @@ public:
         WideCharToMultiByte(CP_UTF8, 0, iniPath.c_str(), -1, m_iniPath.data(), len, nullptr, nullptr);
         io.IniFilename = m_iniPath.c_str();
 
-        // Police système en plus haute résolution que la police par défaut (moins floue)
-        io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.f);
+        // Police et tailles à l'échelle de l'affichage (125 %, 150 %...), taille entière pour des glyphes nets.
+        // ponytail: échelle figée au lancement ; changer d'écran à autre DPI ne la met pas à jour
+        const float dpiScale = ImGui_ImplWin32_GetDpiScaleForHwnd(GetHwnd());
+        io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", roundf(18.f * dpiScale));
 
-        ImGui::StyleColorsDark();
-        // Fenêtres détachées assorties au thème
-        ImGuiStyle& style = ImGui::GetStyle();
-        style.WindowRounding = 0.f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.f;
+        EditorUI::ApplyStyle();
+        ImGui::GetStyle().ScaleAllSizes(dpiScale);
 
         ImGui_ImplWin32_Init(GetHwnd());
 
@@ -92,8 +91,11 @@ private:
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, PWSTR /*pCmdLine*/, int nCmdShow)
 {
-    const uint32_t initialWidth = 1280;
-    const uint32_t initialHeight = 720;
+    // Avant la création de la fenêtre : sinon Windows étire en bitmap une fenêtre rendue à 96 DPI (texte flou)
+    ImGui_ImplWin32_EnableDpiAwareness();
+    const float dpiScale = ImGui_ImplWin32_GetDpiScaleForMonitor(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+    const uint32_t initialWidth = (uint32_t)(1280 * dpiScale);
+    const uint32_t initialHeight = (uint32_t)(720 * dpiScale);
 
     // Scope : app (et sa Scene) doit être détruite avant le dump des fuites
     {

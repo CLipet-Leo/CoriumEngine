@@ -1,5 +1,102 @@
 #include "stdafx.h"
 
+namespace
+{
+	// Accent « métal en fusion » (Corium)
+	constexpr ImVec4 kAccent = { 1.00f, 0.48f, 0.12f, 1.00f };
+
+	ImVec4 WithAlpha(ImVec4 c, float a) { c.w = a; return c; }
+}
+
+EditorUI::EditorUI()
+{
+	// Ordre d'affichage dans l'inspecteur
+	m_components.push_back(std::make_unique<TransformPanel>());
+	m_components.push_back(std::make_unique<MeshPanel>());
+	m_components.push_back(std::make_unique<CameraPanel>());
+	m_components.push_back(std::make_unique<LightPanel>());
+}
+
+void EditorUI::ApplyStyle()
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImGui::StyleColorsDark(&style);
+
+	style.WindowPadding = ImVec2(8.f, 8.f);
+	style.FramePadding = ImVec2(6.f, 4.f);
+	style.ItemSpacing = ImVec2(8.f, 5.f);
+	style.ItemInnerSpacing = ImVec2(4.f, 4.f);
+	style.IndentSpacing = 14.f;
+	style.ScrollbarSize = 12.f;
+	style.WindowBorderSize = 1.f;
+	style.FrameBorderSize = 0.f;
+	style.WindowRounding = 0.f; // fenêtres détachées : bords droits comme l'OS
+	style.ChildRounding = 3.f;
+	style.FrameRounding = 3.f;
+	style.PopupRounding = 3.f;
+	style.GrabRounding = 3.f;
+	style.TabRounding = 3.f;
+	style.ScrollbarRounding = 6.f;
+	style.WindowMenuButtonPosition = ImGuiDir_None;
+	style.DockingSeparatorSize = 2.f;
+
+	const ImVec4 bg      = { 0.10f, 0.10f, 0.11f, 1.f };
+	const ImVec4 bgDark  = { 0.07f, 0.07f, 0.08f, 1.f };
+	const ImVec4 frame   = { 0.16f, 0.16f, 0.18f, 1.f };
+	const ImVec4 hovered = { 0.22f, 0.22f, 0.25f, 1.f };
+	const ImVec4 active  = { 0.27f, 0.27f, 0.31f, 1.f };
+	const ImVec4 line    = { 0.18f, 0.18f, 0.20f, 1.f };
+
+	ImVec4* c = style.Colors;
+	c[ImGuiCol_Text]                      = { 0.90f, 0.90f, 0.92f, 1.f };
+	c[ImGuiCol_TextDisabled]              = { 0.45f, 0.45f, 0.48f, 1.f };
+	c[ImGuiCol_WindowBg]                  = bg; // opaque, y compris les fenêtres détachées
+	c[ImGuiCol_ChildBg]                   = bg;
+	c[ImGuiCol_PopupBg]                   = bgDark;
+	c[ImGuiCol_Border]                    = { 0.04f, 0.04f, 0.05f, 1.f };
+	c[ImGuiCol_FrameBg]                   = frame;
+	c[ImGuiCol_FrameBgHovered]            = hovered;
+	c[ImGuiCol_FrameBgActive]             = active;
+	c[ImGuiCol_TitleBg]                   = bgDark;
+	c[ImGuiCol_TitleBgActive]             = bgDark;
+	c[ImGuiCol_TitleBgCollapsed]          = bgDark;
+	c[ImGuiCol_MenuBarBg]                 = bgDark;
+	c[ImGuiCol_ScrollbarBg]               = bg;
+	c[ImGuiCol_ScrollbarGrab]             = frame;
+	c[ImGuiCol_ScrollbarGrabHovered]      = hovered;
+	c[ImGuiCol_ScrollbarGrabActive]       = active;
+	c[ImGuiCol_CheckMark]                 = kAccent;
+	c[ImGuiCol_SliderGrab]                = kAccent;
+	c[ImGuiCol_SliderGrabActive]          = kAccent;
+	c[ImGuiCol_Button]                    = frame;
+	c[ImGuiCol_ButtonHovered]             = hovered;
+	c[ImGuiCol_ButtonActive]              = active;
+	c[ImGuiCol_Header]                    = { 0.19f, 0.19f, 0.22f, 1.f };
+	c[ImGuiCol_HeaderHovered]             = hovered;
+	c[ImGuiCol_HeaderActive]              = active;
+	c[ImGuiCol_Separator]                 = line;
+	c[ImGuiCol_SeparatorHovered]          = WithAlpha(kAccent, 0.6f);
+	c[ImGuiCol_SeparatorActive]           = kAccent;
+	c[ImGuiCol_ResizeGrip]                = { 0.f, 0.f, 0.f, 0.f };
+	c[ImGuiCol_ResizeGripHovered]         = WithAlpha(kAccent, 0.6f);
+	c[ImGuiCol_ResizeGripActive]          = kAccent;
+	c[ImGuiCol_Tab]                       = bgDark;
+	c[ImGuiCol_TabHovered]                = hovered;
+	c[ImGuiCol_TabSelected]               = bg;
+	c[ImGuiCol_TabSelectedOverline]       = kAccent;
+	c[ImGuiCol_TabDimmed]                 = bgDark;
+	c[ImGuiCol_TabDimmedSelected]         = bg;
+	c[ImGuiCol_TabDimmedSelectedOverline] = { 0.f, 0.f, 0.f, 0.f };
+	c[ImGuiCol_DockingPreview]            = WithAlpha(kAccent, 0.5f);
+	c[ImGuiCol_DockingEmptyBg]            = bgDark;
+	c[ImGuiCol_TableHeaderBg]             = frame;
+	c[ImGuiCol_TableBorderStrong]         = line;
+	c[ImGuiCol_TableBorderLight]          = line;
+	c[ImGuiCol_TextSelectedBg]            = WithAlpha(kAccent, 0.35f);
+	c[ImGuiCol_NavCursor]                 = kAccent;
+	c[ImGuiCol_PlotHistogram]             = kAccent;
+}
+
 void EditorUI::Draw(Scene& scene, const RendererStats& stats, ImTextureID sceneTexture)
 {
 	DrawDockSpace();
@@ -70,13 +167,20 @@ void EditorUI::DrawViewport(ImTextureID sceneTexture)
 
 void EditorUI::DrawStats(const RendererStats& stats)
 {
-	if (ImGui::Begin("GPU Stats"))
+	// Échantillonné toutes les 0.5 s : lisible au lieu de clignoter à chaque frame
+	const double now = ImGui::GetTime();
+	if (now - m_statsTime >= 0.5)
 	{
-		ImGui::Text("FPS       : %.1f", ImGui::GetIO().Framerate);
-		ImGui::Text("Frame     : %.3f ms", 1000.f / ImGui::GetIO().Framerate);
-		ImGui::Text("Frame idx : %u", stats.frameIndex);
-		ImGui::Separator();
-		ImGui::Text("Adapter   : %ls", stats.adapterName);
+		m_statsTime = now;
+		m_statsFps = ImGui::GetIO().Framerate;
+	}
+
+	if (ImGui::Begin("GPU Stats") && BeginProperties("##stats"))
+	{
+		PropertyLabel("FPS");     ImGui::Text("%.1f", m_statsFps);
+		PropertyLabel("Frame");   ImGui::Text("%.3f ms", 1000.f / m_statsFps);
+		PropertyLabel("Adapter"); ImGui::TextWrapped("%ls", stats.adapterName);
+		ImGui::EndTable();
 	}
 	ImGui::End();
 }
@@ -85,8 +189,16 @@ void EditorUI::DrawScenePanel(Scene& scene)
 {
 	if (ImGui::Begin("Scene"))
 	{
+		// Sélection en accent (le gris de Header est réservé aux sections de l'inspecteur)
+		ImGui::PushStyleColor(ImGuiCol_Header, WithAlpha(kAccent, 0.45f));
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, WithAlpha(kAccent, 0.55f));
 		for (EntityID root : scene.GetRootEntities())
 			DrawEntityNode(scene, root);
+		ImGui::PopStyleColor(2);
+
+		// Clic dans le vide : désélection
+		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered())
+			m_selectedEntity = NULL_ENTITY;
 	}
 	ImGui::End();
 
@@ -99,19 +211,23 @@ void EditorUI::DrawScenePanel(Scene& scene)
 void EditorUI::DrawEntityNode(Scene& scene, EntityID id)
 {
 	Entity* e = scene.GetEntity(id);
-	if (!e || !e->active) return;
+	if (!e) return;
 
 	auto* h = scene.GetComponent<HierarchyComponent>(id);
 	bool  hasChildren = h && !h->children.empty();
 
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow |
-		ImGuiTreeNodeFlags_SpanAvailWidth;
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+		ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_FramePadding;
 	if (!hasChildren)  flags |= ImGuiTreeNodeFlags_Leaf;
 	if (id == m_selectedEntity) flags |= ImGuiTreeNodeFlags_Selected;
 
+	// Entités inactives grisées, pas masquées : il faut pouvoir les resélectionner pour les réactiver
+	if (!e->active) ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
 	bool open = ImGui::TreeNodeEx((void*)(intptr_t)id, flags, "%s", e->name.c_str());
+	if (!e->active) ImGui::PopStyleColor();
 
-	if (ImGui::IsItemClicked())
+	// Le clic sur la flèche déplie sans sélectionner
+	if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 		m_selectedEntity = id;
 
 	if (open)
@@ -128,50 +244,16 @@ void EditorUI::DrawInspector(Scene& scene, EntityID id)
 	Entity* e = scene.GetEntity(id);
 	if (!e) return;
 
-	// Nom éditable
+	// En-tête : actif + nom éditable
+	ImGui::Checkbox("##active", &e->active);
+	ImGui::SameLine();
 	char buf[128];
-	strncpy_s(buf, e->name.c_str(), sizeof(buf));
+	strncpy_s(buf, e->name.c_str(), _TRUNCATE);
+	ImGui::SetNextItemWidth(-FLT_MIN);
 	if (ImGui::InputText("##name", buf, sizeof(buf)))
 		e->name = buf;
+	ImGui::Spacing();
 
-	ImGui::SameLine();
-	ImGui::Checkbox("Active", &e->active);
-	ImGui::Separator();
-
-	// Transform
-	if (auto* t = scene.GetComponent<TransformComponent>(id))
-	{
-		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			if (ImGui::DragFloat3("Position", &t->position.x, 0.01f)) t->dirty = true;
-			if (m_eulerEntity != id || memcmp(&m_eulerSource, &t->rotation, sizeof(Quat)) != 0)
-			{
-				m_eulerEntity = id;
-				m_eulerSource = t->rotation;
-				m_euler = ToEulerDeg(t->rotation);
-			}
-			if (ImGui::DragFloat3("Rotation", &m_euler.x, 0.5f))
-			{
-				t->SetRotationDeg(m_euler);
-				m_eulerSource = t->rotation;
-			}
-			if (ImGui::DragFloat3("Scale", &t->scale.x, 0.01f)) t->dirty = true;
-		}
-	}
-
-	// Light
-	if (auto* l = scene.GetComponent<LightComponent>(id))
-	{
-		if (ImGui::CollapsingHeader("Light"))
-		{
-			const char* types[] = { "Directional", "Point", "Spot" };
-			int type = (int)l->type;
-			if (ImGui::Combo("Type", &type, types, 3))
-				l->type = (LightType)type;
-			ImGui::ColorEdit3("Color", &l->color.x);
-			ImGui::DragFloat("Intensity", &l->intensity, 0.01f, 0.f, 10.f);
-			if (l->type != LightType::Directional)
-				ImGui::DragFloat("Range", &l->range, 0.1f, 0.f, 500.f);
-		}
-	}
+	for (auto& component : m_components)
+		component->Draw(scene, id);
 }

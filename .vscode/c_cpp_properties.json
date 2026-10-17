@@ -1,17 +1,40 @@
 {
+    // Reflète Debug_DX12 des .vcxproj. Les .h n'ont aucun #include : on force le PCH
+    // pour qu'IntelliSense les analyse correctement.
+    // Les exe ont chacun leur stdafx.h/Resource.h et IntelliSense prend le premier trouvé dans
+    // includePath : une configuration par exe (sélecteur dans la barre d'état), DLL valable dans les deux.
     "configurations": [
         {
-            // Reflète Debug_DX12 des .vcxproj. Les .h n'ont aucun #include : on force le PCH
-            // pour qu'IntelliSense les analyse correctement.
-            "name": "Debug_DX12",
+            "name": "Debug_DX12 (Editor)",
+            "intelliSenseMode": "windows-msvc-x64",
+            "cppStandard": "c++20",
+            "cStandard": "c17",
+            "includePath": [
+                "${workspaceFolder}/CoriumEngine/Core/include",
+                "${workspaceFolder}/CoriumEditor/include",
+                "${workspaceFolder}/CoriumEditor",
+                "${workspaceFolder}/vcpkg_installed/x64-windows/include"
+            ],
+            "forcedInclude": [
+                "${workspaceFolder}/CoriumEngine/Core/include/pch.h"
+            ],
+            "defines": [
+                "_DEBUG",
+                "_WINDOWS",
+                "USE_DX12",
+                "RENDERER_EXPORTS",
+                "UNICODE",
+                "_UNICODE"
+            ]
+        },
+        {
+            "name": "Debug_DX12 (Runtime)",
             "intelliSenseMode": "windows-msvc-x64",
             "cppStandard": "c++20",
             "cStandard": "c17",
             "includePath": [
                 "${workspaceFolder}/CoriumEngine/Core/include",
                 "${workspaceFolder}/CoriumRuntime/include",
-                "${workspaceFolder}/CoriumEditor/include",
-                "${workspaceFolder}/CoriumEditor",
                 "${workspaceFolder}/vcpkg_installed/x64-windows/include"
             ],
             "forcedInclude": [
