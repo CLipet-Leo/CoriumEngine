@@ -144,7 +144,7 @@ peut lire la cible pendant son écriture, déchirure possible) ; commande « Sau
   la caméra ne réagit qu'au survol du Viewport ; layout persistant ; aucune erreur de la couche
   de debug DX12 pendant un redimensionnement.
 
-## 4. Abstraction RHI + backend Vulkan
+## 4. Abstraction RHI + backend Vulkan — terminé
 À faire avant les nouvelles features de rendu (ombres, post-process) : chaque feature écrite
 en DX12 pur serait à réécrire. RHI et Vulkan dans le même chantier : une RHI à un seul backend
 finit en enveloppe de DX12, le second backend force l'abstraction à rester honnête.
@@ -180,9 +180,9 @@ GLFW écarté : `Win32Application`/`Input` couvrent déjà la plateforme (à rev
   `CopyDest`, `Present`, `Depth`), traduits par chaque backend. Pas de suivi automatique.
 - Choix du backend **au runtime** : `CreateRenderer(RendererBackend)` (+ argument de ligne de
   commande `-vulkan`/`-dx12`, DX12 par défaut). Les deux backends dans la même DLL, mêmes
-  configs de build (`Debug_DX12` renommée `Debug` quand Vulkan arrive).
+  configs de build (`Debug_DX12` renommée `Debug` : fait).
 
-### Modèle de binding (à trancher en premier)
+### Modèle de binding (tranché : proposition retenue, cf. `Conventions.md`)
 Le point dur : la root signature actuelle (CBV root descriptors `b0` objet, `b1` scène,
 `b2` lumières) n'a pas d'équivalent direct en Vulkan.
 - Proposé : fréquences de mise à jour = espaces de registre = descriptor sets.
@@ -202,7 +202,8 @@ deux backends. C'est le cas d'usage qui valide le modèle de binding ; pas une f
 
 ### Backend Vulkan
 - Vulkan 1.3 (dynamic rendering, synchronization2) : pas de `VkRenderPass`/`VkFramebuffer`.
-- Loader : `volk` ; mémoire : **VMA** (vcpkg). Swapchain : `VkSurfaceKHR` sur le `HWND`
+- Loader : ~~`volk`~~ `vulkan-1.lib` en delay-load (les symboles globaux de volk entrent en
+  collision avec `imgui.lib` de vcpkg, qui appelle les prototypes Vulkan) ; mémoire : **VMA** (vcpkg). Swapchain : `VkSurfaceKHR` sur le `HWND`
   de `Win32Application`, recréée au resize comme la swapchain DX12.
 - Inversion Y par viewport à hauteur négative (cf. `Conventions.md`). Le sens des faces vu
   par le rasterizer s'inverse avec le viewport : vérifier que le culling reste identique au
@@ -221,3 +222,20 @@ deux backends. C'est le cas d'usage qui valide le modèle de binding ; pas une f
   détaché, caméra.
 - Zéro erreur de la couche de debug DX12 (GBV) et des validation layers Vulkan (synchro
   comprise) pendant redimensionnements et détachement de fenêtre.
+
+### Réalisé
+- `Renderer/Rhi.h` (interfaces), `Renderer/Renderer.cpp` (ex-`DX12Renderer`), un fichier par
+  backend : `Core/DX12/DX12Rhi.cpp`, `Core/Vulkan/VkRhi.cpp` (les anciennes classes `DX12*` y sont
+  fondues). Swapchain portée par `RhiDevice` (une seule fenêtre principale).
+- Uploads (meshes, damier) enregistrés dans la command list de la frame ; les buffers de staging
+  sont libérés quand le slot de frame revient (plus de valeurs de fence dans les registres).
+- Multi-viewport : DX12 garde l'attente CPU (queues privées du backend ImGui) ; Vulkan n'attend
+  pas (même queue, la barrière de la cible offscreen couvre les soumissions suivantes).
+- ImGui Vulkan 1.91.9 : sa barrière de swapchain des fenêtres détachées ne s'enchaîne pas avec
+  le sémaphore d'acquisition (hazard WRITE_AFTER_READ). Filtré dans le callback de validation
+  uniquement pour les images hors de notre swapchain ; à retirer avec une version d'ImGui corrigée.
+- Vérifié (Debug et Release, runtime et éditeur, deux backends) : rendu identique, aucune erreur
+  de validation (synchro comprise) ni de la couche de debug DX12 pendant redimensionnement,
+  minimisation et Viewport détaché. Le détachement a été testé par un `imgui.ini` (fenêtre
+  flottante hors de la fenêtre principale), pas à la souris ; caméra éditeur non retestée
+  (indépendante du backend).

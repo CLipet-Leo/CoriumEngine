@@ -1,43 +1,32 @@
 #include "pch.h"
 #include "RenderSystem.h"
 
-void RenderSystem::Init(ID3D12Device* device, uint32_t frameCount)
+void RenderSystem::Init(RhiDevice& device, RhiPipelineLayout* layout)
 {
-    CreateObjectConstantBuffer(device, frameCount);
-}
-
-void RenderSystem::CreateObjectConstantBuffer(ID3D12Device* device, uint32_t frameCount)
-{
-    // Les CBV doivent être alignés sur 256 bytes
-    m_objectCBAlignedSize = (sizeof(ObjectConstants) + 255) & ~255;
-    const UINT totalSize = m_objectCBAlignedSize * MAX_OBJECTS_PER_FRAME;
-
-    m_frameResources.resize(frameCount);
-
-    auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-    auto bufDesc = CD3DX12_RESOURCE_DESC::Buffer(totalSize);
-
-    for (auto& fr : m_frameResources)
+    for (auto& fr : m_frames)
     {
-        EVAL_HR(device->CreateCommittedResource(
-            &uploadHeap, D3D12_HEAP_FLAG_NONE, &bufDesc,
-            D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-            IID_PPV_ARGS(&fr.objectCB)),
-            "RenderSystem: object constant buffer creation failed");
-
-        EVAL_HR(fr.objectCB->Map(0, nullptr, reinterpret_cast<void**>(&fr.mapped)),
-            "RenderSystem: object CB map failed");
+        fr.objectCB = device.CreateBuffer({ SLOT_SIZE * MAX_OBJECTS_PER_FRAME, RhiMemory::Upload,
+            RhiBufferUsage_Constant });
+        fr.bindings = device.CreateBindingSet({ layout, 2, { { fr.objectCB.get(), 0, SLOT_SIZE } } });
     }
 }
 
-void RenderSystem::Submit(Scene& scene, ID3D12GraphicsCommandList* cmdList,
-    uint32_t frameIndex, const MeshRegistry& meshRegistry,
+void RenderSystem::Shutdown()
+{
+    for (auto& fr : m_frames)
+        fr = {};
+}
+
+void RenderSystem::Submit(Scene& scene, RhiCommandList* cmd,
+    uint32_t frameIndex, RhiBindingSet* frameSet,
+    const MeshRegistry& meshRegistry,
     const MaterialRegistry& materialRegistry,
     const Mat4& viewProj)
 {
-    auto& fr = m_frameResources[frameIndex];
-    fr.usedSlots = 0;
-    ID3D12PipelineState* boundPso = nullptr;
+    auto& fr = m_frames[frameIndex];
+    uint32_t usedSlots = 0;
+    RhiPipeline* boundPipeline = nullptr;
+    const Material* boundMaterial = nullptr;
 
     for (auto& [id, mesh] : scene.Meshes())
     {
@@ -54,44 +43,48 @@ void RenderSystem::Submit(Scene& scene, ID3D12GraphicsCommandList* cmdList,
 
         const Material* material = materialRegistry.Get(mesh.materialIndex);
         if (!material) material = materialRegistry.Get(0);
-        if (!material || !material->pso) continue;
+        if (!material || !material->pipeline) continue;
 
-        if (material->pso.Get() != boundPso)
+        if (usedSlots >= MAX_OBJECTS_PER_FRAME)
         {
-            boundPso = material->pso.Get();
-            cmdList->SetPipelineState(boundPso);
+            CE_ASSERT(false && "MAX_OBJECTS_PER_FRAME atteint");
+            break;
         }
 
-        CE_ASSERT(fr.usedSlots < MAX_OBJECTS_PER_FRAME);
+        if (material->pipeline != boundPipeline)
+        {
+            cmd->SetPipeline(material->pipeline);
+            if (!boundPipeline)
+                cmd->SetBindingSet(frameSet);
+            boundPipeline = material->pipeline;
+        }
+        if (material != boundMaterial)
+        {
+            cmd->SetBindingSet(material->bindings.get());
+            boundMaterial = material;
+        }
 
-        // Construction des données par objet
+        // Données par objet dans le slot du ring buffer
         ObjectConstants objData;
         const Mat4& world = transform->worldMatrix;
-
         objData.world = Transpose(world);
         objData.worldViewProj = Transpose(world * viewProj);
-        objData.baseColor = material->desc.baseColor;
 
-        // Upload dans le slot du ring buffer
-        const UINT offset = fr.usedSlots * m_objectCBAlignedSize;
-        memcpy(fr.mapped + offset, &objData, sizeof(ObjectConstants));
+        const uint32_t offset = usedSlots * SLOT_SIZE;
+        memcpy(fr.objectCB->GetMapped() + offset, &objData, sizeof(ObjectConstants));
+        cmd->SetBindingSet(fr.bindings.get(), offset);
 
-        // Liaison des CBVs et draw call
-        const D3D12_GPU_VIRTUAL_ADDRESS objCBAddr =
-            fr.objectCB->GetGPUVirtualAddress() + offset;
-
-        cmdList->SetGraphicsRootConstantBufferView(0, objCBAddr);
-        cmdList->IASetVertexBuffers(0, 1, &gpuMesh->vbView);
+        cmd->SetVertexBuffer(gpuMesh->buffer.get(), 0, sizeof(MeshVertex));
         if (gpuMesh->indexCount > 0)
         {
-            cmdList->IASetIndexBuffer(&gpuMesh->ibView);
-            cmdList->DrawIndexedInstanced(gpuMesh->indexCount, 1, 0, 0, 0);
+            cmd->SetIndexBuffer(gpuMesh->buffer.get(), gpuMesh->indexOffset);
+            cmd->DrawIndexed(gpuMesh->indexCount);
         }
         else
         {
-            cmdList->DrawInstanced(gpuMesh->vertexCount, 1, 0, 0);
+            cmd->Draw(gpuMesh->vertexCount);
         }
 
-        ++fr.usedSlots;
+        ++usedSlots;
     }
 }

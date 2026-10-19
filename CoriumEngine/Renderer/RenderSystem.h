@@ -1,32 +1,31 @@
 #pragma once
 
-class CORIUM_API RenderSystem
+class RenderSystem
 {
 public:
-    void Init(ID3D12Device* device, uint32_t frameCount);
+    // layout : espace 2 = constantes par objet (constant buffer dynamique)
+    void Init(RhiDevice& device, RhiPipelineLayout* layout);
+    void Shutdown();
 
-    // Soumet tous les draw calls visibles
+    // Soumet tous les draw calls visibles, dans une passe ouverte.
+    // frameSet (space0) est lié avec le premier pipeline.
     void Submit(Scene& scene,
-        ID3D12GraphicsCommandList* cmdList,
-        uint32_t                   frameIndex,
-        const MeshRegistry& meshRegistry,
+        RhiCommandList*         cmd,
+        uint32_t                frameIndex,
+        RhiBindingSet*          frameSet,
+        const MeshRegistry&     meshRegistry,
         const MaterialRegistry& materialRegistry,
-        const Mat4& viewProj);
+        const Mat4&             viewProj);
 
 private:
-    // Alloue un constant buffer persistant pour les données par objet
-    void CreateObjectConstantBuffer(ID3D12Device* device, uint32_t frameCount);
-
-    // Ring buffer de CBVs pour les données par-objet (1 slot par draw par frame)
+    // Ring buffer par frame : un slot de constantes par draw, choisi par offset dynamique
     static constexpr uint32_t MAX_OBJECTS_PER_FRAME = 512;
+    static constexpr uint32_t SLOT_SIZE = (uint32_t)RhiAlign(sizeof(ObjectConstants), kRhiConstantAlign);
 
     struct FrameResources
     {
-        Microsoft::WRL::ComPtr<ID3D12Resource> objectCB;
-        UINT8* mapped = nullptr;
-        uint32_t                               usedSlots = 0;
+        std::unique_ptr<RhiBuffer>     objectCB;
+        std::unique_ptr<RhiBindingSet> bindings; // space2
     };
-
-    std::vector<FrameResources> m_frameResources;
-    uint32_t                    m_objectCBAlignedSize = 0;
+    std::array<FrameResources, kRhiFramesInFlight> m_frames;
 };

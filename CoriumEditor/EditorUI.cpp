@@ -179,6 +179,7 @@ void EditorUI::DrawStats(const RendererStats& stats)
 	{
 		PropertyLabel("FPS");     ImGui::Text("%.1f", m_statsFps);
 		PropertyLabel("Frame");   ImGui::Text("%.3f ms", 1000.f / m_statsFps);
+		PropertyLabel("Backend"); ImGui::Text("%ls", stats.backendName);
 		PropertyLabel("Adapter"); ImGui::TextWrapped("%ls", stats.adapterName);
 		ImGui::EndTable();
 	}

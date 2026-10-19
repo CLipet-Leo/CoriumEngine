@@ -10,9 +10,14 @@
       "name": "imgui",
       "features": [
         "dx12-binding",
+        "vulkan-binding",
         "win32-binding",
         "docking-experimental"
       ]
-    }
+    },
+    "vulkan-headers",
+    "vulkan-loader",
+    "vulkan-memory-allocator",
+    "vulkan-validationlayers"
   ]
 }

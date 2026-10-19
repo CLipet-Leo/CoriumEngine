@@ -4,6 +4,7 @@
 
 // Fichiers d'en-tête Windows
 #include <windows.h>
+#include <shellapi.h>  // CommandLineToArgvW
 
 // Fichiers d'en-tête C RunTime
 #include <string>

@@ -9,7 +9,6 @@
 
 // ajouter les en-têtes à précompiler ici
 #include "framework.h"
-#include "DirectXHeaders.h"
 #include "CoreDefinition.h"
 #include "Core.h"
 

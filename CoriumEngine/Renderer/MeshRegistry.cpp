@@ -1,14 +1,12 @@
 #include "pch.h"
 #include "MeshRegistry.h"
 
-// Vertex GPU — position + couleur générée proceduralement
-struct MeshVertex
-{
-    Vec3 position;
-    Vec4 color;
-};
+// UV des 6 sommets d'une face de BoxGeometry (bas-gauche, bas-droite, haut-droite / bas-gauche,
+// haut-droite, haut-gauche).
+// ponytail: propre à la box, à remplacer par les UV de la géométrie avec un vrai loader de mesh
+static constexpr Vec2 kBoxFaceUV[6] = { {0, 1}, {1, 1}, {1, 0}, {0, 1}, {1, 0}, {0, 0} };
 
-uint32_t MeshRegistry::Register(const MeshDesc& desc, ID3D12Device* device)
+uint32_t MeshRegistry::Register(const MeshDesc& desc, RhiDevice& device)
 {
     // Si déjà enregistré, retourne l'index existant
     auto it = m_nameIndex.find(desc.name);
@@ -21,67 +19,39 @@ uint32_t MeshRegistry::Register(const MeshDesc& desc, ID3D12Device* device)
     const auto& verts = geometry.GetVertices();
     CE_ASSERT(!verts.empty());
 
-    // Construction des vertices GPU avec couleur procedurale
+    // Construction des vertices GPU avec couleur procédurale
     std::vector<MeshVertex> gpuVerts;
     gpuVerts.reserve(verts.size());
-    for (const auto& v : verts)
+    for (size_t i = 0; i < verts.size(); ++i)
     {
+        const Vec3& v = verts[i];
         const float r = (v.x + 0.5f) + 0.25f;
         const float g = (v.y + 0.5f) + 0.25f;
         const float b = (v.z + 0.5f) + 0.25f;
-        gpuVerts.push_back({ { v.x, v.y, v.z }, { r, g, b, 1.f } });
+        gpuVerts.push_back({ { v.x, v.y, v.z }, { r, g, b, 1.f }, kBoxFaceUV[i % 6] });
     }
 
     const auto& indices = geometry.GetIndices();
-    const UINT vbSize = static_cast<UINT>(gpuVerts.size() * sizeof(MeshVertex));
-    const UINT ibOffset = (vbSize + 3u) & ~3u;
-    const UINT ibSize = static_cast<UINT>(indices.size() * sizeof(uint32_t));
-    const UINT totalSize = ibOffset + ibSize;
+    const uint64_t vbSize = gpuVerts.size() * sizeof(MeshVertex);
+    const uint64_t ibOffset = RhiAlign(vbSize, 4);
+    const uint64_t ibSize = indices.size() * sizeof(uint32_t);
+    const uint64_t totalSize = ibOffset + ibSize;
 
     GpuMesh mesh;
     mesh.desc = desc;
     mesh.vertexCount = static_cast<uint32_t>(gpuVerts.size());
     mesh.indexCount = static_cast<uint32_t>(indices.size());
+    mesh.indexOffset = ibOffset;
 
-    // Heap DEFAULT — réside sur le GPU, performances optimales
-    auto defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-    auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-    auto bufDesc = CD3DX12_RESOURCE_DESC::Buffer(totalSize);
+    mesh.buffer = device.CreateBuffer({ totalSize, RhiMemory::GpuOnly,
+        RhiBufferUsage_Vertex | RhiBufferUsage_Index | RhiBufferUsage_CopyDst });
+    mesh.staging = device.CreateBuffer({ totalSize, RhiMemory::Upload, RhiBufferUsage_CopySrc });
 
-    EVAL_HR(device->CreateCommittedResource(
-        &defaultHeap, D3D12_HEAP_FLAG_NONE, &bufDesc,
-        D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-        IID_PPV_ARGS(&mesh.vertexBuffer)),
-        "MeshRegistry: vertex buffer (default heap) creation failed");
-
-    // Upload buffer intermédiaire
-    EVAL_HR(device->CreateCommittedResource(
-        &uploadHeap, D3D12_HEAP_FLAG_NONE, &bufDesc,
-        D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-        IID_PPV_ARGS(&mesh.uploadBuffer)),
-        "MeshRegistry: upload buffer creation failed");
-
-    // Copie CPU → upload buffer
-    UINT8* mapped = nullptr;
-    EVAL_HR(mesh.uploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mapped)),
-        "MeshRegistry: upload buffer map failed");
+    // Copie CPU → staging
+    uint8_t* mapped = mesh.staging->GetMapped();
     memcpy(mapped, gpuVerts.data(), vbSize);
     if (ibSize > 0)
         memcpy(mapped + ibOffset, indices.data(), ibSize);
-    mesh.uploadBuffer->Unmap(0, nullptr);
-
-    const D3D12_GPU_VIRTUAL_ADDRESS gpuAddr = mesh.vertexBuffer->GetGPUVirtualAddress();
-    mesh.vbView.BufferLocation = gpuAddr;
-    mesh.vbView.StrideInBytes = sizeof(MeshVertex);
-    mesh.vbView.SizeInBytes = vbSize;
-    if (ibSize > 0)
-    {
-        mesh.ibView.BufferLocation = gpuAddr + ibOffset;
-        mesh.ibView.Format = DXGI_FORMAT_R32_UINT;
-        mesh.ibView.SizeInBytes = ibSize;
-    }
-    mesh.sizeInBytes = totalSize;
-    mesh.uploaded = false;
 
     uint32_t index = static_cast<uint32_t>(m_meshes.size());
     m_nameIndex[desc.name] = index;
@@ -91,43 +61,20 @@ uint32_t MeshRegistry::Register(const MeshDesc& desc, ID3D12Device* device)
     return index;
 }
 
-void MeshRegistry::RecordPendingUploads(ID3D12GraphicsCommandList* cmdList, uint64_t fenceValue)
+void MeshRegistry::RecordPendingUploads(RhiCommandList* cmd, std::vector<std::unique_ptr<RhiBuffer>>& release)
 {
-    if (m_pendingUploads.empty()) return;
-
-    std::vector<D3D12_RESOURCE_BARRIER> barriers;
-    barriers.reserve(m_pendingUploads.size());
-
     for (uint32_t index : m_pendingUploads)
     {
         GpuMesh& mesh = m_meshes[index];
-        cmdList->CopyBufferRegion(mesh.vertexBuffer.Get(), 0,
-            mesh.uploadBuffer.Get(), 0, mesh.sizeInBytes);
-
-        barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
-            mesh.vertexBuffer.Get(),
-            D3D12_RESOURCE_STATE_COPY_DEST,
-            D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER));
+        cmd->Barrier(mesh.buffer.get(), RhiState::Undefined, RhiState::CopyDest);
+        cmd->CopyBuffer(mesh.buffer.get(), mesh.staging.get(), mesh.staging->GetSize());
+        cmd->Barrier(mesh.buffer.get(), RhiState::CopyDest, RhiState::ShaderRead);
 
         // Même command list que les draws : la copie précède le rendu
+        release.push_back(std::move(mesh.staging));
         mesh.uploaded = true;
-        mesh.uploadFenceValue = fenceValue;
-        m_inFlightUploads.push_back(index);
     }
-
-    cmdList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
     m_pendingUploads.clear();
-}
-
-void MeshRegistry::ReleaseCompletedUploads(uint64_t completedFenceValue)
-{
-    std::erase_if(m_inFlightUploads, [&](uint32_t index)
-    {
-        GpuMesh& mesh = m_meshes[index];
-        if (mesh.uploadFenceValue > completedFenceValue) return false;
-        mesh.uploadBuffer.Reset();
-        return true;
-    });
 }
 
 const GpuMesh* MeshRegistry::Get(uint32_t index) const
@@ -136,7 +83,9 @@ const GpuMesh* MeshRegistry::Get(uint32_t index) const
     return &m_meshes[index];
 }
 
-bool MeshRegistry::IsValid(uint32_t index) const
+void MeshRegistry::Clear()
 {
-    return index < m_meshes.size() && m_meshes[index].uploaded;
+    m_meshes.clear();
+    m_nameIndex.clear();
+    m_pendingUploads.clear();
 }

@@ -35,8 +35,22 @@ implique de migrer tout le code concerné dans le même commit.
 
 ## Rasterisation
 - Face avant = **sens horaire** à l'écran (`FrontCounterClockwise = FALSE`), culling `Back` par défaut.
+- Vulkan : viewport à hauteur négative (`y = hauteur`, `height = -hauteur`), qui donne la même image
+  qu'en DX12 ; le sens à l'écran est donc le même : `VK_FRONT_FACE_CLOCKWISE`.
 
 ## Layout GPU
 - `Vec3` = 3 floats (12 octets), aucun `alignas` : les structures de constant buffer suivent
   le packing HLSL (pas de champ qui chevauche une frontière de 16 octets, padding explicite).
 - Chaque structure de `ShaderTypes.h` porte des `static_assert` sur `sizeof`/`offsetof`.
+- SPIR-V compilé avec `-fvk-use-dx-layout` : même layout de cbuffer qu'en DXIL.
+
+## Binding (shaders)
+- Un espace de registres HLSL par fréquence de mise à jour, = un descriptor set Vulkan (`spaceN` = set N) :
+  - `space0` frame : `b0` scène, `b1` lumières ;
+  - `space1` matériau : `b0` constantes, `t0` texture, `s0` sampler ;
+  - `space2` objet : `b0` constantes, buffer par frame + offset dynamique (DX12 : root CBV à
+    l'adresse + offset ; Vulkan : `UNIFORM_BUFFER_DYNAMIC`).
+- Bindings Vulkan d'un set : `bN` → `N`, `tN` → `N + 10`, `sN` → `N + 20` (options DXC
+  `-fvk-t-shift 10 all -fvk-s-shift 20 all`, constantes `k*BindingShift` de `VkRhi.cpp`).
+- Un seul fichier HLSL pour les deux backends, sans `#ifdef`. Pas de push/root constants ni de bindless.
+- Attributs de vertex dans l'ordre de `VSInput` (location Vulkan = index de l'attribut).

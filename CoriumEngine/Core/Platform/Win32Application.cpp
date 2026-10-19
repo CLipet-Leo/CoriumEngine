@@ -70,8 +70,20 @@ bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, const wchar
     ShowWindow(m_hWnd, nCmdShow);
     UpdateWindow(m_hWnd);
 
-    // Créer le renderer via ta librairie
-    m_renderer = CreateRenderer();
+    // Backend choisi en ligne de commande (-vulkan / -dx12), DX12 par défaut
+    RendererBackend backend = RendererBackend::DX12;
+    int argc = 0;
+    if (LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc))
+    {
+        for (int i = 1; i < argc; ++i)
+        {
+            if (_wcsicmp(argv[i], L"-vulkan") == 0) backend = RendererBackend::Vulkan;
+            else if (_wcsicmp(argv[i], L"-dx12") == 0) backend = RendererBackend::DX12;
+        }
+        LocalFree(argv);
+    }
+
+    m_renderer = CreateRenderer(backend);
     if (!m_renderer)
         return false;
 

@@ -5,10 +5,14 @@ struct MeshDesc;
 struct MaterialDesc;
 struct ImGuiContext;
 
+// API graphique, choisie au lancement (-dx12 / -vulkan, cf. Win32Application)
+enum class RendererBackend : uint8_t { DX12, Vulkan };
+
 // Infos de debug affichées par l'éditeur
 struct RendererStats
 {
     const wchar_t* adapterName = L"";
+    const wchar_t* backendName = L"";
 };
 
 // Vue fournie hors scène (caméra éditeur), en espace monde
@@ -36,7 +40,7 @@ public:
 
     // --- UI éditeur (optionnelle) ---
     // Le contexte ImGui et le backend Win32 appartiennent à l'exe ; la DLL (copie statique
-    // d'ImGui distincte) s'y rattache avec les allocateurs de l'exe et ajoute le backend DX12.
+    // d'ImGui distincte) s'y rattache avec les allocateurs de l'exe et ajoute le backend graphique.
     // Une fois l'UI initialisée, la scène est rendue dans une cible offscreen (GetSceneTexture)
     // et ImGui dans la swapchain.
     virtual void InitUI(ImGuiContext* context, void* (*allocFunc)(size_t, void*),
@@ -63,6 +67,6 @@ public:
 };
 
 extern "C" {
-    CORIUM_API IRenderer* CreateRenderer();
+    CORIUM_API IRenderer* CreateRenderer(RendererBackend backend);
     CORIUM_API void       DestroyRenderer(IRenderer*);
 }

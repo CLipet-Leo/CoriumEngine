@@ -1,16 +1,10 @@
 #include "pch.h"
 #include "MaterialRegistry.h"
 
-uint32_t MaterialRegistry::Add(const MaterialDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState> pso)
+uint32_t MaterialRegistry::Add(Material&& material)
 {
-	m_materials.push_back({ desc, std::move(pso) });
+	m_materials.push_back(std::move(material));
 	return static_cast<uint32_t>(m_materials.size() - 1);
-}
-
-void MaterialRegistry::SetPipeline(uint32_t index, Microsoft::WRL::ComPtr<ID3D12PipelineState> pso)
-{
-	if (index < m_materials.size())
-		m_materials[index].pso = std::move(pso);
 }
 
 Material* MaterialRegistry::Get(uint32_t index)
