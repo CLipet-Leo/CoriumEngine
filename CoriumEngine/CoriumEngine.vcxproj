@@ -119,10 +119,10 @@
     <ClCompile Include="Core\DX12\DX12MemoryManager.cpp" />
     <ClCompile Include="Core\DX12\DX12PSOCache.cpp" />
     <ClCompile Include="Core\DX12\DX12ImGui.cpp" />
-    <ClCompile Include="Scene\MeshRegistry.cpp" />
-    <ClCompile Include="Scene\MaterialRegistry.cpp" />
+    <ClCompile Include="Renderer\MeshRegistry.cpp" />
+    <ClCompile Include="Renderer\MaterialRegistry.cpp" />
     <ClCompile Include="Scene\Systems\LightSystem.cpp" />
-    <ClCompile Include="Scene\Systems\RenderSystem.cpp" />
+    <ClCompile Include="Renderer\RenderSystem.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\Systems\TransformSystem.cpp" />
     <ClCompile Include="Scene\Systems\CameraSystem.cpp" />
@@ -160,10 +160,11 @@
     <ClInclude Include="Core\Geometry\BufferGeometry.h" />
     <ClInclude Include="Core\Geometry\BoxGeometry.h" />
     <ClInclude Include="Core\DX12\DX12ImGui.h" />
-    <ClInclude Include="Scene\MeshRegistry.h" />
-    <ClInclude Include="Scene\MaterialRegistry.h" />
+    <ClInclude Include="Scene\ResourceDescs.h" />
+    <ClInclude Include="Renderer\MeshRegistry.h" />
+    <ClInclude Include="Renderer\MaterialRegistry.h" />
     <ClInclude Include="Scene\Systems\LightSystem.h" />
-    <ClInclude Include="Scene\Systems\RenderSystem.h" />
+    <ClInclude Include="Renderer\RenderSystem.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\Components.h" />
     <ClInclude Include="Scene\Entity.h" />
@@ -172,10 +173,25 @@
     <ClInclude Include="Core\DX12\DX12RenderTarget.h" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="Shaders\Basic.hlsl">
-      <DestinationFolders>$(OutDir)Shaders</DestinationFolders>
-    </CopyFileToFolders>
+    <Shader Include="Shaders\Basic.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <!-- Shaders HLSL compilés par DXC (vcpkg directx-dxc) en DXIL (.cso) et SPIR-V (.spv) à côté de
+       l'exe. Convention : points d'entrée VSMain/PSMain. Après ClCompile car vcpkg installe dxc
+       juste avant ClCompile. -->
+  <PropertyGroup>
+    <DxcExe>$(SolutionDir)vcpkg_installed\x64-windows\tools\directx-dxc\dxc.exe</DxcExe>
+    <DxcFlags Condition="'$(Configuration)'=='Debug_DX12'">-Zi -Qembed_debug -Od</DxcFlags>
+    <DxcFlags Condition="'$(Configuration)'!='Debug_DX12'">-O3</DxcFlags>
+    <ShaderOutDir>$(OutDir)Shaders\</ShaderOutDir>
+  </PropertyGroup>
+  <Target Name="CompileShaders" AfterTargets="ClCompile" Inputs="@(Shader)"
+          Outputs="@(Shader->'$(ShaderOutDir)%(Filename)_vs.cso');@(Shader->'$(ShaderOutDir)%(Filename)_ps.cso');@(Shader->'$(ShaderOutDir)%(Filename)_vs.spv');@(Shader->'$(ShaderOutDir)%(Filename)_ps.spv')">
+    <MakeDir Directories="$(ShaderOutDir)" />
+    <Exec Command="&quot;$(DxcExe)&quot; $(DxcFlags) -T vs_6_0 -E VSMain -Fo &quot;$(ShaderOutDir)%(Shader.Filename)_vs.cso&quot; &quot;%(Shader.FullPath)&quot;" />
+    <Exec Command="&quot;$(DxcExe)&quot; $(DxcFlags) -T ps_6_0 -E PSMain -Fo &quot;$(ShaderOutDir)%(Shader.Filename)_ps.cso&quot; &quot;%(Shader.FullPath)&quot;" />
+    <Exec Command="&quot;$(DxcExe)&quot; $(DxcFlags) -spirv -T vs_6_0 -E VSMain -Fo &quot;$(ShaderOutDir)%(Shader.Filename)_vs.spv&quot; &quot;%(Shader.FullPath)&quot;" />
+    <Exec Command="&quot;$(DxcExe)&quot; $(DxcFlags) -spirv -T ps_6_0 -E PSMain -Fo &quot;$(ShaderOutDir)%(Shader.Filename)_ps.spv&quot; &quot;%(Shader.FullPath)&quot;" />
+  </Target>
   <ImportGroup Label="ExtensionTargets" />
 </Project>

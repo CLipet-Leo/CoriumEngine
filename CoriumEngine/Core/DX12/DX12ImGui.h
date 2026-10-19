@@ -29,10 +29,11 @@ public:
 	// Termine la frame ImGui et enregistre la fenêtre principale, avant Close()
 	void Render(ID3D12GraphicsCommandList* cmdList);
 
-	// Fenêtres détachées hors de la fenêtre principale (multi-viewport), après
-	// ExecuteCommandLists : le backend les rend chacune sur sa propre queue.
-	// ponytail: aucune synchro entre ces queues et la nôtre ; un Viewport détaché peut lire
-	// la cible offscreen pendant son écriture (déchirure visuelle). À synchroniser si gênant.
+	// Multi-viewport, après ExecuteCommandLists : crée/détruit les fenêtres détachées.
+	// Retourne true s'il y en a à rendre ; le backend les rend chacune sur sa propre queue,
+	// sans synchro avec la nôtre : l'appelant doit attendre la fin de sa frame avant
+	// RenderPlatformWindows (elles peuvent afficher la cible offscreen).
+	bool UpdatePlatformWindows();
 	void RenderPlatformWindows();
 
 private:

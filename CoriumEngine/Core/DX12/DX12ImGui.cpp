@@ -46,10 +46,15 @@ void DX12ImGui::Render(ID3D12GraphicsCommandList* cmdList)
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList);
 }
 
-void DX12ImGui::RenderPlatformWindows()
+bool DX12ImGui::UpdatePlatformWindows()
 {
 	if (!(ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
-		return;
+		return false;
 	ImGui::UpdatePlatformWindows();
+	return ImGui::GetPlatformIO().Viewports.Size > 1;
+}
+
+void DX12ImGui::RenderPlatformWindows()
+{
 	ImGui::RenderPlatformWindowsDefault();
 }

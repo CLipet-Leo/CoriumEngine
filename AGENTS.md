@@ -18,10 +18,14 @@ Moteur 3D C++ / DirectX 12, Windows x64 uniquement.
 "/c/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe" CoriumEngine.sln -p:Configuration=Debug_DX12 -p:Platform=x64 -m -nologo -v:minimal
 ```
 
-Configs : `Debug_DX12`, `Release`. Sortie : `Build/<Config>/`. Les shaders (`CoriumEngine/Shaders`)
-et `Assets/` (scènes, cf. `doc/SceneFormat.md`) sont copiés à côté de l'exe au build
-(`CopyFileToFolders`) ; les ressources se résolvent via `GetExecutableDir()` (Helper.h), jamais
-relativement au dossier courant.
+Configs : `Debug_DX12`, `Release`. Sortie : `Build/<Config>/`. `Assets/` (scènes, cf.
+`doc/SceneFormat.md`) est copié à côté de l'exe au build (`CopyFileToFolders`). Les shaders
+(`CoriumEngine/Shaders`, items `<Shader>` du `.vcxproj`, entrées `VSMain`/`PSMain`) sont compilés
+par DXC (vcpkg `directx-dxc`, cible `CompileShaders`) en `Shaders/<nom>_vs|ps.cso` (DXIL) et `.spv`
+(SPIR-V) ; erreur de shader = erreur de build. Si `dxc.exe` manque (intégration MSBuild de vcpkg
+inactive) : `vcpkg install --triplet x64-windows` à la racine (vcpkg de VS : `VC/vcpkg/vcpkg.exe`).
+Les ressources se résolvent via `GetExecutableDir()` (Helper.h), jamais relativement au dossier
+courant.
 
 ## Conventions
 

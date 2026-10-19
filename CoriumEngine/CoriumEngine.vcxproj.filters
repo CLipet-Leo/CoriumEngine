@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{49772ffa-661f-4e17-b3a7-c901a8d8f981}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Fichiers de ressources">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -90,13 +93,16 @@
     <ClCompile Include="Core\DX12\DX12RenderTarget.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\Systems\RenderSystem.cpp">
+    <ClCompile Include="Renderer\RenderSystem.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Systems\LightSystem.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\MeshRegistry.cpp">
+    <ClCompile Include="Renderer\MaterialRegistry.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\MeshRegistry.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -203,7 +209,7 @@
     <ClInclude Include="Core\DX12\DX12RenderTarget.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\Systems\RenderSystem.h">
+    <ClInclude Include="Renderer\RenderSystem.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Systems\LightSystem.h">
@@ -215,11 +221,17 @@
     <ClInclude Include="Math\Math.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\MeshRegistry.h">
+    <ClInclude Include="Renderer\MaterialRegistry.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\ResourceDescs.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\MeshRegistry.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="Shaders\Basic.hlsl" />
+    <Shader Include="Shaders\Basic.hlsl" />
   </ItemGroup>
 </Project>

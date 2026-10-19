@@ -1,6 +1,18 @@
 #pragma once
 
 // -------------------------------------------------------
+// Mesh procédural : nom + paramètres de génération (sérialisés)
+// -------------------------------------------------------
+enum class MeshPrimitive : uint8_t { Box };
+
+struct MeshDesc
+{
+    std::string   name;
+    MeshPrimitive primitive = MeshPrimitive::Box;
+    float         size = 1.f;
+};
+
+// -------------------------------------------------------
 // Material — apparence + état de rendu (clé du PSO)
 // -------------------------------------------------------
 enum class CullMode : uint8_t { None, Front, Back };
@@ -22,25 +34,4 @@ struct MaterialDesc
 			"_fill" + std::to_string((int)fillMode) +
 			"_blend" + std::to_string((int)blendMode);
 	}
-};
-
-struct Material
-{
-	MaterialDesc                                desc;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> pso; // partagé via le PSO cache
-};
-
-class CORIUM_API MaterialRegistry
-{
-public:
-	uint32_t Add(const MaterialDesc& desc, Microsoft::WRL::ComPtr<ID3D12PipelineState> pso);
-	void     SetPipeline(uint32_t index, Microsoft::WRL::ComPtr<ID3D12PipelineState> pso);
-
-	Material*       Get(uint32_t index);
-	const Material* Get(uint32_t index) const;
-	uint32_t        Find(const std::string& name) const;
-	uint32_t        Count() const { return static_cast<uint32_t>(m_materials.size()); }
-
-private:
-	std::vector<Material> m_materials;
 };

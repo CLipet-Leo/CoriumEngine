@@ -8,13 +8,14 @@
 #include "../Geometry/BoxGeometry.h"
 
 // Ressources GPU
-#include "../../Scene/MeshRegistry.h"
-#include "../../Scene/MaterialRegistry.h"
+#include "../../Scene/ResourceDescs.h"
+#include "../../Renderer/MeshRegistry.h"
+#include "../../Renderer/MaterialRegistry.h"
+#include "../../Renderer/RenderSystem.h"
 
 // Systèmes
 #include "../../Scene/Systems/CameraSystem.h"
 #include "../../Scene/Systems/LightSystem.h"
-#include "../../Scene/Systems/RenderSystem.h"
 
 #ifdef USE_DX12
 #include "../DX12/DX12Debug.h"

@@ -145,6 +145,79 @@ peut lire la cible pendant son écriture, déchirure possible) ; commande « Sau
   de debug DX12 pendant un redimensionnement.
 
 ## 4. Abstraction RHI + backend Vulkan
-- Conçue d'après les besoins réels du renderer et de l'éditeur (cibles offscreen, textures UI).
-- Inversion Y de Vulkan par viewport à hauteur négative (cf. `Conventions.md`).
-- À faire avant l'ajout de nouvelles features de rendu (textures, ombres, post-process).
+À faire avant les nouvelles features de rendu (ombres, post-process) : chaque feature écrite
+en DX12 pur serait à réécrire. RHI et Vulkan dans le même chantier : une RHI à un seul backend
+finit en enveloppe de DX12, le second backend force l'abstraction à rester honnête.
+Plateforme toujours Windows x64 : le gain est architectural, pas de portage Linux ici.
+
+Références (lecture, pas dépendance — l'exercice est d'écrire la RHI) : **nvrhi** (NVIDIA,
+MIT) — `include/nvrhi/nvrhi.h` pour la forme d'une interface RHI, `BindingLayout`/`BindingSet`
+pour la traduction root signature → descriptor sets, suivi automatique des états à comparer
+avec nos barrières explicites ; ShaderMake pour la compilation HLSL → DXIL/SPIR-V.
+GLFW écarté : `Win32Application`/`Input` couvrent déjà la plateforme (à revoir avec Linux).
+
+### Prérequis (dans l'ordre)
+1. ~~Synchro multi-viewport (reliquat de la spec 3) corrigée en DX12~~ (fait : avant de rendre les
+   fenêtres détachées, attente CPU de la fence de frame ; le backend ImGui crée une queue par
+   fenêtre, inaccessible pour un `Wait` GPU. Seulement quand une fenêtre est détachée).
+2. ~~Code GPU sorti de `Scene/`~~ (fait : `MeshRegistry`, `MaterialRegistry`, `RenderSystem` dans
+   `CoriumEngine/Renderer/` ; `MeshDesc`/`MaterialDesc` et leurs enums, sans type GPU, restent
+   dans `Scene/ResourceDescs.h`).
+3. ~~Shaders compilés au build par **DXC**~~ (fait : `directx-dxc` vcpkg, cible MSBuild
+   `CompileShaders` après `ClCompile` ; SM 6.0, `Shaders/Basic_vs|ps.cso|spv`, chargés par
+   `D3DReadFileToBlob`. SPIR-V avec le mapping de registres par défaut, à fixer avec le modèle
+   de binding).
+
+### Périmètre de la RHI
+- Conçue d'après les besoins réels, et pas plus : buffers (vertex, index, constantes),
+  textures (échantillonnées, render target, depth), sampler, pipeline graphique (clé de PSO
+  actuelle), command list, swapchain, synchro par frame en vol, cible offscreen exposée à l'UI.
+- Pas de compute, pas de render graph, pas de multi-queue dans cette spec.
+- Interfaces virtuelles internes à la DLL (`Rhi*`), jamais exportées : l'API publique reste
+  `IRenderer`. Le renderer (`Renderer`, ex-`DX12Renderer`) ne connaît que la RHI ; `DX12*` et
+  `Vk*` ne sont inclus que par leur backend.
+- Barrières : états de ressource explicites et simples (`RenderTarget`, `ShaderRead`,
+  `CopyDest`, `Present`, `Depth`), traduits par chaque backend. Pas de suivi automatique.
+- Choix du backend **au runtime** : `CreateRenderer(RendererBackend)` (+ argument de ligne de
+  commande `-vulkan`/`-dx12`, DX12 par défaut). Les deux backends dans la même DLL, mêmes
+  configs de build (`Debug_DX12` renommée `Debug` quand Vulkan arrive).
+
+### Modèle de binding (à trancher en premier)
+Le point dur : la root signature actuelle (CBV root descriptors `b0` objet, `b1` scène,
+`b2` lumières) n'a pas d'équivalent direct en Vulkan.
+- Proposé : fréquences de mise à jour = espaces de registre = descriptor sets.
+  `space0` par frame (scène, lumières), `space1` par matériau (textures, sampler, constantes),
+  `space2` par objet (constantes de l'objet).
+- Constantes par objet : buffer par frame + offset dynamique (DX12 : root CBV à l'adresse
+  + offset ; Vulkan : `UNIFORM_BUFFER_DYNAMIC`). Pas de push constants/root constants pour
+  l'instant (limite de 128 octets sur certains GPU, la `worldMatrix` + normale les dépasse vite).
+- Mapping HLSL → SPIR-V par options DXC (`-fvk-b-shift`, `-fvk-t-shift`…) ou `[[vk::binding(n, set)]]` :
+  un seul fichier HLSL, pas de `#ifdef` par backend.
+- Pas de bindless dans cette spec (à reconsidérer avec un vrai système d'assets).
+
+### Texture de validation
+Une texture échantillonnée dans le matériau (damier procédural généré au chargement, pas de
+loader d'image) : impose SRV/descriptor set, sampler, upload par staging et barrières, sur les
+deux backends. C'est le cas d'usage qui valide le modèle de binding ; pas une feature.
+
+### Backend Vulkan
+- Vulkan 1.3 (dynamic rendering, synchronization2) : pas de `VkRenderPass`/`VkFramebuffer`.
+- Loader : `volk` ; mémoire : **VMA** (vcpkg). Swapchain : `VkSurfaceKHR` sur le `HWND`
+  de `Win32Application`, recréée au resize comme la swapchain DX12.
+- Inversion Y par viewport à hauteur négative (cf. `Conventions.md`). Le sens des faces vu
+  par le rasterizer s'inverse avec le viewport : vérifier que le culling reste identique au
+  DX12 (`FrontCounterClockwise = FALSE`) et consigner le réglage Vulkan dans `Conventions.md`.
+- Profondeur [0, 1] native, rien à faire.
+- ImGui : `imgui_impl_vulkan` (feature vcpkg `vulkan-binding`), multi-viewport compris.
+  `ImTextureID` = `VkDescriptorSet` (64 bits) : `GetSceneTexture()` ne change pas.
+- Debug : validation layers + synchronization validation, arrêt sur erreur (équivalent de la
+  couche de debug + GBV actuelle).
+
+### Critère de fin
+- Aucun type `D3D12`/`DXGI`/`Vk` hors de `Core/DX12` et `Core/Vulkan`.
+- `Demo.scene` (avec la texture de validation) rendue à l'identique par les deux backends
+  (comparaison visuelle runtime et éditeur).
+- Éditeur fonctionnel sur les deux backends : Viewport docké, redimensionnement, Viewport
+  détaché, caméra.
+- Zéro erreur de la couche de debug DX12 (GBV) et des validation layers Vulkan (synchro
+  comprise) pendant redimensionnements et détachement de fenêtre.

@@ -1,17 +1,5 @@
 #pragma once
 
-// -------------------------------------------------------
-// Mesh procédural : nom + paramètres de génération (sérialisés)
-// -------------------------------------------------------
-enum class MeshPrimitive : uint8_t { Box };
-
-struct MeshDesc
-{
-    std::string   name;
-    MeshPrimitive primitive = MeshPrimitive::Box;
-    float         size = 1.f;
-};
-
 struct GpuMesh
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer; // VB puis IB dans la même ressource

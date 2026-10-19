@@ -151,22 +151,12 @@ bool DX12Renderer::CreatePipeline()
 		serialized->GetBufferPointer(), serialized->GetBufferSize(),
 		IID_PPV_ARGS(&m_rootSignature)), "Root Signature creation failed");
 
-	UINT compileFlags = 0;
-#if defined(_DEBUG)
-	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-	// Shaders\ est copié à côté de l'exécutable au build
-	const std::wstring shaderPath = GetExecutableDir() + L"Shaders\\Basic.hlsl";
-
-	HRESULT hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &m_vertexShader, &errorBlob);
-	if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-	EVAL_HR(hr, "Basic.hlsl VS compilation failed");
-
-	hr = D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &m_pixelShader, &errorBlob);
-	if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-	EVAL_HR(hr, "Basic.hlsl PS compilation failed");
+	// Shaders compilés au build par DXC (cible CompileShaders), écrits à côté de l'exécutable
+	const std::wstring shaderDir = GetExecutableDir() + L"Shaders\\";
+	EVAL_HR(D3DReadFileToBlob((shaderDir + L"Basic_vs.cso").c_str(), &m_vertexShader),
+		"Basic_vs.cso loading failed");
+	EVAL_HR(D3DReadFileToBlob((shaderDir + L"Basic_ps.cso").c_str(), &m_pixelShader),
+		"Basic_ps.cso loading failed");
 
 	// Matériau par défaut (index 0)
 	MaterialDesc defaultMat;
@@ -433,11 +423,18 @@ void DX12Renderer::Render(Scene& scene, const CameraView* view)
 	ID3D12CommandList* lists[] = { cmd };
 	m_commandQueue->Get()->ExecuteCommandLists(_countof(lists), lists);
 
-	if (m_imgui)
+	m_fence->Signal(m_commandQueue->Get(), m_frameIndex);
+
+	// Fenêtres détachées : rendues sur d'autres queues, elles peuvent lire la cible offscreen.
+	// ponytail: attente CPU de la frame (pas d'accès aux queues du backend pour un Wait GPU),
+	// seulement quand une fenêtre est détachée ; le backend attend déjà chacune de la même façon.
+	if (m_imgui && m_imgui->UpdatePlatformWindows())
+	{
+		m_fence->WaitForFrame(m_frameIndex);
 		m_imgui->RenderPlatformWindows();
+	}
 
 	m_swapChain->Present(1);
-	m_fence->Signal(m_commandQueue->Get(), m_frameIndex);
 	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
