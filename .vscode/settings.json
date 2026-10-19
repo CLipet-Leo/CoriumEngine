@@ -1,0 +1,27 @@
+{
+    // Win32Application.h/.cpp sont en cp1252 : ne pas les réencoder en UTF-8
+    "files.autoGuessEncoding": true,
+    "files.associations": {
+        "*.hlsl": "hlsl",
+        "*.hlsli": "hlsl"
+    },
+    "files.exclude": {
+        "**/Intermediate": true,
+        "**/.vs": true
+    },
+    "files.watcherExclude": {
+        "**/Build/**": true,
+        "**/Intermediate/**": true,
+        "**/vcpkg_installed/**": true
+    },
+    "search.exclude": {
+        "**/Build": true,
+        "**/Intermediate": true,
+        "**/vcpkg_installed": true
+    },
+    "C_Cpp.files.exclude": {
+        "**/.vs": true,
+        "**/Build": true,
+        "**/Intermediate": true
+    }
+}

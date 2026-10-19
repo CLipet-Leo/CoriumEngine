@@ -1,0 +1,62 @@
+# CoriumEngine scene, format: doc/SceneFormat.md
+version: 1
+meshes:
+  - name: "cube"
+    primitive: box
+    size: 1
+materials:
+  - name: "Wireframe"
+    baseColor: [0.3, 1, 0.4, 1]
+    cullMode: none
+    fillMode: wireframe
+    blendMode: opaque
+entities:
+  - uuid: 0x186a2c2cad749b6b
+    name: "Main Camera"
+    active: true
+    transform:
+      position: [0, 1.5, -4]
+      rotation: [0, 0, 0, 1]
+      scale: [1, 1, 1]
+    camera:
+      fovY: 60
+      nearPlane: 0.1
+      farPlane: 1000
+      isMain: true
+  - uuid: 0xdf0cdd9cacb4c4af
+    name: "Sun"
+    active: true
+    transform:
+      position: [0, 0, 0]
+      rotation: [0.3696438, 0.23911762, -0.09904576, 0.8923991]
+      scale: [1, 1, 1]
+    light:
+      type: directional
+      color: [1, 1, 1]
+      intensity: 1.2
+      range: 10
+      spotAngle: 30
+      enabled: true
+  - uuid: 0xe931f60d14a89caa
+    name: "Cube"
+    active: true
+    transform:
+      position: [0, 0, 0]
+      rotation: [0, 0, 0, 1]
+      scale: [1, 1, 1]
+    mesh:
+      mesh: "cube"
+      visible: true
+      castShadows: true
+  - uuid: 0x6687190daf391cfd
+    name: "Wire Cube"
+    active: true
+    transform:
+      position: [2, 0, 0]
+      rotation: [0, 0, 0, 1]
+      scale: [1, 1, 1]
+    mesh:
+      mesh: "cube"
+      material: "Wireframe"
+      visible: true
+      castShadows: true
