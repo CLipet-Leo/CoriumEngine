@@ -6,7 +6,8 @@ Tenir ce fichier à jour plutôt que des mémoires propres à un outil.
 ## Projet
 
 Moteur 3D C++, backends DirectX 12 et Vulkan 1.3 (choisis au lancement : `-dx12`, défaut, ou
-`-vulkan`), Windows x64 uniquement.
+`-vulkan` ; sans argument, l'éditeur lit `editor.ini`, réglé depuis le panneau GPU Stats), Windows
+x64 uniquement.
 
 - `CoriumEngine/` : DLL du moteur. Export via `CORIUM_API` (`RENDERER_EXPORTS` défini dans la DLL).
 - `CoriumRuntime/` : runtime (`Win32Application` telle quelle, caméra `isMain` de la scène, sans ImGui).

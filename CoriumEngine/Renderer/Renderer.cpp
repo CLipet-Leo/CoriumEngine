@@ -171,8 +171,7 @@ void Renderer::RefreshMaterial(uint32_t index)
 
 RendererStats Renderer::GetStats() const
 {
-	return { m_device ? m_device->GetAdapterName() : L"",
-		m_backend == RendererBackend::Vulkan ? L"Vulkan" : L"DirectX 12" };
+	return { m_device ? m_device->GetAdapterName() : L"", m_backend };
 }
 
 void Renderer::InitUI(ImGuiContext* context, void* (*allocFunc)(size_t, void*),

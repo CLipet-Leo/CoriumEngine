@@ -36,6 +36,8 @@ protected:
     virtual const CameraView* GetView() { return nullptr; }
     // Avant le traitement par défaut ; true = message consommé (ex. backend Win32 d'ImGui)
     virtual bool OnWindowMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/) { return false; }
+    // Backend sans -dx12 / -vulkan en ligne de commande (lu dans Initialize)
+    virtual RendererBackend GetDefaultBackend() { return RendererBackend::DX12; }
 
 private:
     // Fonction statique pour rediriger vers l’instance (via userdata)

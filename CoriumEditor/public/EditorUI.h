@@ -8,6 +8,9 @@ public:
     // Thème de l'éditeur, après ImGui::CreateContext
     static void ApplyStyle();
 
+    // Backend du prochain lancement, dans editor.ini à côté de l'exe
+    static RendererBackend LoadBackendSetting();
+
     // Entre ImGui::NewFrame et IRenderer::Render (qui termine la frame ImGui)
     void Draw(Scene& scene, const RendererStats& stats, ImTextureID sceneTexture);
 
@@ -34,6 +37,8 @@ private:
     // FPS affichés, rafraîchis périodiquement (cf. DrawStats)
     double   m_statsTime = -1.0;
     float    m_statsFps = 0.f;
+
+    RendererBackend m_nextBackend; // choisi dans GPU Stats, appliqué au redémarrage
 
     // Sections de l'inspecteur, une par type de composant
     std::vector<std::unique_ptr<ComponentBase>> m_components;

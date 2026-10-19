@@ -7,7 +7,7 @@
 // Déclaré sous #if 0 dans imgui_impl_win32.h
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-// L'éditeur possède le contexte ImGui et le backend Win32 ; le renderer y ajoute le backend DX12
+// L'éditeur possède le contexte ImGui et le backend Win32 ; le renderer y ajoute le backend graphique
 // et rend la scène dans le panneau Viewport, vue par la caméra éditeur (hors scène).
 class EditorApplication : public Win32Application
 {
@@ -76,6 +76,8 @@ protected:
     }
 
     const CameraView* GetView() override { return &m_view; }
+
+    RendererBackend GetDefaultBackend() override { return EditorUI::LoadBackendSetting(); }
 
     bool OnWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) override
     {

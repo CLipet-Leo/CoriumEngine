@@ -70,8 +70,8 @@ bool Win32Application::Initialize(HINSTANCE hInstance, int nCmdShow, const wchar
     ShowWindow(m_hWnd, nCmdShow);
     UpdateWindow(m_hWnd);
 
-    // Backend choisi en ligne de commande (-vulkan / -dx12), DX12 par défaut
-    RendererBackend backend = RendererBackend::DX12;
+    // La ligne de commande (-vulkan / -dx12) l'emporte sur GetDefaultBackend
+    RendererBackend backend = GetDefaultBackend();
     int argc = 0;
     if (LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc))
     {

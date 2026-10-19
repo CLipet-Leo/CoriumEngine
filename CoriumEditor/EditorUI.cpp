@@ -6,9 +6,24 @@ namespace
 	constexpr ImVec4 kAccent = { 1.00f, 0.48f, 0.12f, 1.00f };
 
 	ImVec4 WithAlpha(ImVec4 c, float a) { c.w = a; return c; }
+
+	// Réglages de l'éditeur (format INI de Windows)
+	std::wstring SettingsPath() { return GetExecutableDir() + L"editor.ini"; }
+
+	// Indexé par RendererBackend
+	const char* const    kBackendNames[] = { "DirectX 12", "Vulkan" };
+	const wchar_t* const kBackendKeys[] = { L"DX12", L"Vulkan" };
+}
+
+RendererBackend EditorUI::LoadBackendSetting()
+{
+	wchar_t value[16] = {};
+	GetPrivateProfileStringW(L"Renderer", L"Backend", L"DX12", value, 16, SettingsPath().c_str());
+	return _wcsicmp(value, L"Vulkan") == 0 ? RendererBackend::Vulkan : RendererBackend::DX12;
 }
 
 EditorUI::EditorUI()
+	: m_nextBackend(LoadBackendSetting())
 {
 	// Ordre d'affichage dans l'inspecteur
 	m_components.push_back(std::make_unique<TransformPanel>());
@@ -179,7 +194,18 @@ void EditorUI::DrawStats(const RendererStats& stats)
 	{
 		PropertyLabel("FPS");     ImGui::Text("%.1f", m_statsFps);
 		PropertyLabel("Frame");   ImGui::Text("%.3f ms", 1000.f / m_statsFps);
-		PropertyLabel("Backend"); ImGui::Text("%ls", stats.backendName);
+		PropertyLabel("Backend");
+		int next = (int)m_nextBackend;
+		if (ImGui::Combo("##backend", &next, kBackendNames, IM_ARRAYSIZE(kBackendNames)))
+		{
+			m_nextBackend = (RendererBackend)next;
+			WritePrivateProfileStringW(L"Renderer", L"Backend", kBackendKeys[next], SettingsPath().c_str());
+		}
+		if (m_nextBackend != stats.backend)
+		{
+			PropertyLabel("");
+			ImGui::TextDisabled("Actif : %s (redémarrer)", kBackendNames[(int)stats.backend]);
+		}
 		PropertyLabel("Adapter"); ImGui::TextWrapped("%ls", stats.adapterName);
 		ImGui::EndTable();
 	}

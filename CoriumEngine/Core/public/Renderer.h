@@ -5,14 +5,14 @@ struct MeshDesc;
 struct MaterialDesc;
 struct ImGuiContext;
 
-// API graphique, choisie au lancement (-dx12 / -vulkan, cf. Win32Application)
+// API graphique, choisie au lancement (cf. Win32Application::GetDefaultBackend)
 enum class RendererBackend : uint8_t { DX12, Vulkan };
 
 // Infos de debug affichées par l'éditeur
 struct RendererStats
 {
     const wchar_t* adapterName = L"";
-    const wchar_t* backendName = L"";
+    RendererBackend backend = RendererBackend::DX12;
 };
 
 // Vue fournie hors scène (caméra éditeur), en espace monde
